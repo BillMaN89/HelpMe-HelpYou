@@ -59,7 +59,41 @@ export const registerUser = async (req, res) => {
   }
 };
 
-export const loginUser = async (req, res) => {};
+export const loginUser = async (req, res) => {
+  const {email, password} = req.body;
+   try {
+    // Έλεγχος αν υπάρχει ο χρήστης
+    const user = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (user.rows.length === 0) {
+      return res.status(401).json({ message: 'Λάθος στοιχεία σύνδεσης' });
+    }
+
+    // Έλεγχος κωδικού
+    const isPasswordValid = await bcrypt.compare(password, user.rows[0].password_hash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Λάθος στοιχεία σύνδεσης' });
+    }
+
+    // Δημιουργία token
+    const { user_type } = user.rows[0];
+
+    const token = jwt.sign(
+      { email, user_type },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    // Αποστολή token στον xρήστη
+    res.status(200).json({ token });
+   } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Σφάλμα κατά την είσοδο' });
+  }
+};
 
 export const logoutUser = async (req, res) => {};
 
