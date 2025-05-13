@@ -10,12 +10,12 @@
 
 ### ✅ 13–19 Μαΐου: Ρύθμιση Backend (Express + DB)
 
-* [ ] Δημιουργία φακέλου `thesis-backend` και setup αρχείων (`package.json`, δομή φακέλων)
-* [ ] Εγκατάσταση dependencies: `express`, `pg`, `dotenv`, `cors`, `nodemon`
-* [ ] Δημιουργία αρχείου `db.js` για τη σύνδεση με PostgreSQL
-* [ ] Ρύθμιση `.env` αρχείου με μεταβλητές περιβάλλοντος
-* [ ] Δημιουργία πρώτου route `/ping` για δοκιμή
-* [ ] Έλεγχος αν δουλεύει σωστά η σύνδεση Express ↔ PostgreSQL
+* [✅] Δημιουργία φακέλου `thesis-backend` και setup αρχείων (`package.json`, δομή φακέλων)
+* [✅] Εγκατάσταση dependencies: `express`, `pg`, `dotenv`, `cors`, `nodemon`
+* [✅] Δημιουργία αρχείου `db.js` για τη σύνδεση με PostgreSQL
+* [✅] Ρύθμιση `.env` αρχείου με μεταβλητές περιβάλλοντος
+* [✅] Δημιουργία πρώτου route `/ping` για δοκιμή
+* [✅] Έλεγχος αν δουλεύει σωστά η σύνδεση Express ↔ PostgreSQL
 
 ### ✅ 20–26 Μαΐου: Authentication
 
