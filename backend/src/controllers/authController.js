@@ -85,7 +85,7 @@ export const loginUser = async (req, res) => {
     const token = jwt.sign(
       { email, user_type },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
     // Αποστολή token στον xρήστη
     res.status(200).json({ token });
