@@ -1,5 +1,6 @@
 import express from 'express';
 import { registerUser, loginUser, getUserProfile } from '../controllers/authController.js';
+import { verifyToken } from '../middlewares/verifyToken.js';
 
 
 const router = express.Router();
@@ -7,6 +8,13 @@ const router = express.Router();
 router.post('/register', registerUser);
 // Route for user login
 router.post('/login', loginUser);
+
+router.get('/me', verifyToken, (req,res) => {
+    res.status(200).json({
+        message: 'Η αυθεντικοποίηση του χρήστη έγινε επιτυχώς',
+        user: req.user
+    });
+});
 
 
 
