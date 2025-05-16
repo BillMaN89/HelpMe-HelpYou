@@ -20,8 +20,8 @@
 ### ✅ 20–26 Μαΐου: Authentication
 
 * [✅] Δημιουργία routes για `/register` και `/login`
-* [ ] Εγκατάσταση και χρήση `bcrypt` για κρυπτογράφηση κωδικών
-* [ ] Δημιουργία JWT tokens κατά την είσοδο χρήστη
+* [✅] Εγκατάσταση και χρήση `bcrypt` για κρυπτογράφηση κωδικών
+* [✅] Δημιουργία JWT tokens κατά την είσοδο χρήστη
 * [ ] Middleware για έλεγχο authentication (`authMiddleware`)
 * [ ] Middleware για έλεγχο ρόλων (`isPsychologist`, `isSocialWorker`, `isAdmin`)
 * [ ] Route `/me` για να επιστρέφει τα στοιχεία του login χρήστη

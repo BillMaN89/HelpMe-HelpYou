@@ -129,20 +129,6 @@ export async function assignSupportRequest(req, res) {
   const { id } = req.params;
   const { assigned_employee_email } = req.body;
 
-  // Ελεγχος αν ο χρήστης έχει το δικαίωμα ανάθεσης αιτημάτων
-  const permResult = await pool.query(
-    `SELECT rp.permission_name
-     FROM role_permissions AS rp
-     JOIN user_roles AS ur ON ur.role_name = rp.role_name
-     WHERE ur.email = $1`,
-    [req.user.email]
-  );
-  const permissions = permResult.rows.map(r => r.permission_name);
-
-  if (!permissions.includes('assign_requests')) {
-    return res.status(403).json({ message: 'Δεν έχετε δικαίωμα ανάθεσης αιτημάτων' });
-  }
-
   if (!assigned_employee_email) {
     return res.status(400).json({ message: 'Λείπει το email του υπαλλήλου ή εθελοντή' });
   }
