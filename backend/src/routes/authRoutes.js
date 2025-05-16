@@ -4,11 +4,13 @@ import { verifyToken } from '../middlewares/verifyToken.js';
 
 
 const router = express.Router();
-// Route for user registration
+
+// Route για εγγραφή χρήστη 
 router.post('/register', registerUser);
-// Route for user login
+// Route για login χρήστη
 router.post('/login', loginUser);
 
+// Route για αυθεντικοποίηση χρήστη
 router.get('/me', verifyToken, (req,res) => {
     res.status(200).json({
         message: 'Η αυθεντικοποίηση του χρήστη έγινε επιτυχώς',
