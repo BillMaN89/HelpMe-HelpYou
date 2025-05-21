@@ -95,8 +95,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
+//η αποσύνδεση είναι client side
 export const logoutUser = async (req, res) => {};
-
-export const getUserProfile = async (req, res) => {}
 
 
