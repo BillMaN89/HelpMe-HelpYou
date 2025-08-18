@@ -2,7 +2,6 @@ import { pool } from '../db/pool.js';
 export async function getUserProfile(req, res){
     try {
         const email = req.user.email;
-
         const profile = await getUserFullProfile(email);
 
         res.status(200).json(profile);
@@ -12,7 +11,7 @@ export async function getUserProfile(req, res){
     }
 };
 
-export async function getUserByEmail(){
+export async function getUserByEmail(req, res){
     try {
         const targetEmail = req.params.email;
         const viewerEmail = req.user.email;
@@ -21,13 +20,12 @@ export async function getUserByEmail(){
             const profile = await getUserFullProfile(targetEmail);
             return res.status(200).json(profile);
         }
-        //θα βάλω permission checks
-
+        //temporary solution to prevent access to other users' profiles
+        return res.status(403).json({ message: 'Δεν έχετε πρόσβαση σε προφίλ άλλων χρηστών' });
     } catch (error) {
         console.error('Σφάλμα στο getUserByEmail:', error);
         res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση του χρήστη' });
-    }
-        
+    }       
 };
 
 //helper function
@@ -42,16 +40,12 @@ export async function getUserFullProfile(email){
             throw { status: 404, message: "Ο χρήστης δεν βρέθηκε" };
         }
 
-        const user = userResult.rows[0];
-        // Remove sensitive information
-        if (user.password_hash) {
-            delete user.password_hash;
-        };  
-        
-        if (user.dob) {
-            user.dob = new Date(user.dob).toISOString().split('T')[0];
-            //Traditional date format YYYY-MM-DD
-        };
+        const user = sanitizeUser(userResult.rows[0]);
+
+        //safety check for user type
+        if (!user.user_type) {
+            throw { status: 500, message: 'Άδειο user_type μετά το sanitize' };
+        };      
 
         switch (user.user_type) {
             case 'patient':
@@ -89,8 +83,31 @@ export async function getUserFullProfile(email){
     }      
 };
 
+//helper function to sanitize user data
+export function sanitizeUser(user) {
+    if (!user) {
+        return null;
+    }
+
+    // create copy for manipulation
+    const cleanUser = { ...user };
+
+    // Remove sensitive information
+    if (cleanUser.password_hash) {
+        delete cleanUser.password_hash;
+    };  
+        
+    if (cleanUser.dob) {
+        cleanUser.dob = new Date(cleanUser.dob).toISOString().split('T')[0];
+        //Traditional date format YYYY-MM-DD
+    };
+
+    return cleanUser;
+};
+
 export async function updateUserProfile(){
 
 };
 
-
+export async function deleteUserProfile(){
+}
