@@ -175,3 +175,33 @@ export async function assignSupportRequest(req, res) {
     res.status(500).json({ message: 'Σφάλμα κατά την ανάθεση αιτήματος' });
   }
 }
+
+
+export async function getAssignedRequests(req, res) {
+  const { email } = req.user;
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT *
+         FROM support_requests
+        WHERE assigned_employee_email = $1
+        ORDER BY created_at ASC`, //παλιότερα πρώτα
+      [email]
+    );
+    
+    if (rows.length === 0) {
+      return res.status(200).json({
+      message: 'Δεν υπάρχουν ανατεθειμένα αιτήματα για εσάς αυτή τη στιγμή',
+      requests: []
+      });
+    }
+
+    return res.status(200).json({ requests: rows });
+    
+  } catch (error) {
+    console.error('Σφάλμα κατά την προβολή ανατεθειμένων αιτημάτων:', error);
+    return res.status(500).json({
+      message: 'Σφάλμα κατά την προβολή ανατεθειμένων αιτημάτων'
+    });
+  }
+}

@@ -1,3 +1,4 @@
+import { pool } from '../db/pool.js';
 export async function getUserProfile(req, res){
     try {
         const email = req.user.email;
@@ -12,7 +13,21 @@ export async function getUserProfile(req, res){
 };
 
 export async function getUserByEmail(){
+    try {
+        const targetEmail = req.params.email;
+        const viewerEmail = req.user.email;
 
+        if(targetEmail === viewerEmail){
+            const profile = await getUserFullProfile(targetEmail);
+            return res.status(200).json(profile);
+        }
+        //θα βάλω permission checks
+
+    } catch (error) {
+        console.error('Σφάλμα στο getUserByEmail:', error);
+        res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση του χρήστη' });
+    }
+        
 };
 
 //helper function
