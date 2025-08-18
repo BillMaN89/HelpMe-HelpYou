@@ -43,6 +43,15 @@ export async function getUserFullProfile(email){
         }
 
         const user = userResult.rows[0];
+        // Remove sensitive information
+        if (user.password_hash) {
+            delete user.password_hash;
+        };  
+        
+        if (user.dob) {
+            user.dob = new Date(user.dob).toISOString().split('T')[0];
+            //Traditional date format YYYY-MM-DD
+        };
 
         switch (user.user_type) {
             case 'patient':
