@@ -173,6 +173,132 @@ export async function updateUserProfile(req, res){
     }
 }
 
+export async function deleteUserProfile(req, res) {
+  try {
+    const requester = req.user.email;
+    const emailToDelete = req.params.email;
 
-export async function deleteUserProfile(){
+    // Permission check
+    if (requester !== emailToDelete) {
+      const canManage = await userHasPermission(requester, 'manage_users');
+      if (!canManage) {
+        return res.status(403).json({ message: 'Δεν έχετε δικαίωμα διαγραφής αυτού του χρήστη' });
+      }
+    }
+
+    // Check if user exists
+    const { rows: urows } = await pool.query(
+      `SELECT email, user_type FROM users WHERE email = $1`,
+      [emailToDelete]
+    );
+    if (!urows.length) return res.status(404).json({ message: 'Ο χρήστης δεν βρέθηκε' });
+    const user = urows[0]; // { email, user_type }
+
+    // Last admin protection
+    const { rows: isAdminRows } = await pool.query(
+      `SELECT 1 FROM user_roles WHERE email = $1 AND role_name = 'admin'`,
+      [emailToDelete]
+    );
+    if (isAdminRows.length) {
+      const { rows: adminCountRows } = await pool.query(
+        `SELECT COUNT(*)::int AS cnt FROM user_roles WHERE role_name = 'admin'`
+      );
+      if (adminCountRows[0].cnt === 1) {
+        return res.status(409).json({ message: 'Δεν μπορείτε να διαγράψετε τον τελευταίο διαχειριστή' });
+      }
+    }
+
+    // Patient check placeholder
+
+    // Transaction (reassign / force delete)
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      if (user.user_type === 'employee') {
+        const { reassignTo, force } = req.body ?? {};
+
+        // support requests check (assigned/in_progress)
+        const { rows: active } = await client.query(
+          `SELECT request_id
+           FROM support_requests
+           WHERE assigned_employee_email = $1
+             AND status IN ('assigned','in_progress')`,
+          [emailToDelete]
+        );
+
+        if (active.length) {
+          if (reassignTo && !force) {
+            // reassignTo validity check
+            const { rows: targetEmp } = await client.query(
+              `SELECT 1 FROM users WHERE email = $1 AND user_type = 'employee'`,
+              [reassignTo]
+            );
+            if (!targetEmp.length) {
+              await client.query('ROLLBACK');
+              return res.status(400).json({ message: 'Ο χρήστης δεν είναι έγκυρος υπάλληλος. Παρακαλώ ελέγξτε τα στοιχεία και δοκιμάστε πάλι.' });
+            }
+
+            // Reassign
+            await client.query(
+              `UPDATE support_requests
+               SET assigned_employee_email = $1,
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE assigned_employee_email = $2
+                 AND status IN ('assigned','in_progress')`,
+              [reassignTo, emailToDelete]
+            );
+            // continue to delete flow
+          } else if (force) {
+            // Force delete: will set assigned_employee_email to NULL 
+          } else {
+            await client.query('ROLLBACK');
+            return res.status(409).json({
+              message: 'Ο υπάλληλος έχει ενεργές αναθέσεις. Πρέπει να ανατεθούν αλλού ή να γίνει force delete.',
+              blocking_requests: active.map(r => r.request_id)
+            });
+          }
+        }
+      }
+
+      // Delete user
+      await client.query('DELETE FROM users WHERE email = $1', [emailToDelete]);
+      // CASCADE: address_details, patient_details, employee_details, volunteer_details,
+      // volunteer_availability, volunteer_help_type, user_roles, support_requests.user_email
+      // SET NULL: support_requests.assigned_employee_email (για employees) 
+
+      await client.query('COMMIT');
+      return res.status(204).send();
+    } catch (e) {
+      await client.query('ROLLBACK');
+      console.error('DB error on deleteUserProfile:', e);
+      return res.status(500).json({ message: 'Σφάλμα κατά τη διαγραφή χρήστη' });
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Σφάλμα στο deleteUserProfile:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά τη διαγραφή χρήστη' });
+  }
 }
+
+async function userHasPermission(email, permission) {
+  try {
+    const { rows } = await pool.query(
+      `SELECT 1
+       FROM user_roles ur
+       JOIN role_permissions rp ON ur.role_name = rp.role_name
+       WHERE ur.email = $1
+         AND rp.permission_name = $2
+       LIMIT 1`,
+      [email, permission]
+    );
+
+    return rows.length > 0;
+  } catch (error) {
+    console.error('Σφάλμα στο userHasPermission:', error);
+    throw error;
+  }
+}
+
+
