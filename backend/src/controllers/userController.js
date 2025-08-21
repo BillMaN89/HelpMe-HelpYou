@@ -32,7 +32,18 @@ export async function getUserByEmail(req, res){
 export async function getUserFullProfile(email){   
     try {
         const userResult = await pool.query(
-            `SELECT * FROM users WHERE email = $1`,
+            `SELECT
+                email,
+                first_name,
+                last_name,
+                to_char(dob, 'YYYY-MM-DD') AS dob,
+                birth_place,
+                phone_no,
+                mobile,
+                occupation,
+                user_type
+             FROM users
+             WHERE email = $1`,
             [email]
         );
         
@@ -42,7 +53,7 @@ export async function getUserFullProfile(email){
 
         const user = sanitizeUser(userResult.rows[0]);
 
-        //safety check for user type
+        // safety check για user_type
         if (!user.user_type) {
             throw { status: 500, message: 'Άδειο user_type μετά το sanitize' };
         };      
@@ -96,18 +107,72 @@ export function sanitizeUser(user) {
     if (cleanUser.password_hash) {
         delete cleanUser.password_hash;
     };  
-        
-    if (cleanUser.dob) {
-        cleanUser.dob = new Date(cleanUser.dob).toISOString().split('T')[0];
-        //Traditional date format YYYY-MM-DD
-    };
 
     return cleanUser;
 };
 
-export async function updateUserProfile(){
+//helper function to perform user update
+async function performUserUpdate(email, fieldsToUpdate){
+    try {
+        if (!fieldsToUpdate || Object.keys(fieldsToUpdate).length === 0) {
+            throw new Error('Δεν παρέχονται πεδία για ενημέρωση');
+        }
+        //keys and values
+        const keys = Object.keys(fieldsToUpdate);
+        const values = Object.values(fieldsToUpdate);
 
+        //create query string
+        const setClauses = keys.map((key, index) => `${key} = $${index + 1}`);
+        const setString = setClauses.join(', ');
+
+        const query = `
+            UPDATE users
+            SET ${setString}
+            WHERE email = $${keys.length + 1}
+            RETURNING
+            email,
+            first_name,
+            last_name,
+            to_char(dob,'YYYY-MM-DD') AS dob,
+            birth_place,
+            phone_no,
+            mobile,
+            occupation,
+            user_type`;
+
+        //execute query
+        const params = [...values, email];
+        const result = await pool.query(query, params);
+
+        if (result.rows.length === 0) {
+            throw new Error('Δεν βρέθηκε χρήστης με αυτό το email');
+        }
+
+        //sanitize and return updated user
+        return sanitizeUser(result.rows[0]);
+    } catch (error) {
+        console.error('Σφάλμα στο performUserUpdate:', error);
+        throw error;
+    }
 };
+
+export async function updateUserProfile(req, res){
+    try {
+        const email = req.user.email;
+        const fieldsToUpdate = req.body;
+
+        const updatedUser = await performUserUpdate(email, fieldsToUpdate);
+
+        res.status(200).json({
+            message: 'Το προφίλ ενημερώθηκε επιτυχώς',
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error('Σφάλμα στο updateUserProfile:', error);
+        res.status(500).json({ message: 'Σφάλμα κατά την ενημέρωση του προφίλ του χρήστη' });
+    }
+}
+
 
 export async function deleteUserProfile(){
 }
