@@ -5,7 +5,7 @@
 ---
 
 ## 🔹 Backend
-- [ ] CRUD Users (create/update/delete μόνο από admin)
+- [ ✅] CRUD Users (create/update/delete μόνο από admin)
 - [ ] Validation στα routes (email format, required fields, password length)
 - [ ] Cleanup: αφαίρεση `password_hash` από responses, format ημερομηνίας
 - [ ] HTTPS (self-signed SSL cert)

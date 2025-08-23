@@ -53,7 +53,7 @@ export async function getUserFullProfile(email){
 
         const user = sanitizeUser(userResult.rows[0]);
 
-        // safety check για user_type
+        // user_type sanity check
         if (!user.user_type) {
             throw { status: 500, message: 'Άδειο user_type μετά το sanitize' };
         };      
@@ -110,68 +110,6 @@ export function sanitizeUser(user) {
 
     return cleanUser;
 };
-
-//helper function to perform user update
-async function performUserUpdate(email, fieldsToUpdate){
-    try {
-        if (!fieldsToUpdate || Object.keys(fieldsToUpdate).length === 0) {
-            throw new Error('Δεν παρέχονται πεδία για ενημέρωση');
-        }
-        //keys and values
-        const keys = Object.keys(fieldsToUpdate);
-        const values = Object.values(fieldsToUpdate);
-
-        //create query string
-        const setClauses = keys.map((key, index) => `${key} = $${index + 1}`);
-        const setString = setClauses.join(', ');
-
-        const query = `
-            UPDATE users
-            SET ${setString}
-            WHERE email = $${keys.length + 1}
-            RETURNING
-            email,
-            first_name,
-            last_name,
-            to_char(dob,'YYYY-MM-DD') AS dob,
-            birth_place,
-            phone_no,
-            mobile,
-            occupation,
-            user_type`;
-
-        //execute query
-        const params = [...values, email];
-        const result = await pool.query(query, params);
-
-        if (result.rows.length === 0) {
-            throw new Error('Δεν βρέθηκε χρήστης με αυτό το email');
-        }
-
-        //sanitize and return updated user
-        return sanitizeUser(result.rows[0]);
-    } catch (error) {
-        console.error('Σφάλμα στο performUserUpdate:', error);
-        throw error;
-    }
-};
-
-export async function updateUserProfile(req, res){
-    try {
-        const email = req.user.email;
-        const fieldsToUpdate = req.body;
-
-        const updatedUser = await performUserUpdate(email, fieldsToUpdate);
-
-        res.status(200).json({
-            message: 'Το προφίλ ενημερώθηκε επιτυχώς',
-            user: updatedUser
-        });
-    } catch (error) {
-        console.error('Σφάλμα στο updateUserProfile:', error);
-        res.status(500).json({ message: 'Σφάλμα κατά την ενημέρωση του προφίλ του χρήστη' });
-    }
-}
 
 export async function deleteUserProfile(req, res) {
   try {
@@ -300,5 +238,232 @@ async function userHasPermission(email, permission) {
     throw error;
   }
 }
+//User update function (users & address_details)
+//Input fields sanity check
+const USER_UPDATABLE_FIELDS = new Set([
+  'first_name', 'last_name', 'dob', 'birth_place',
+  'phone_no', 'mobile', 'occupation', /* 'user_type' allowed only for admins */
+]);
 
+const ADDRESS_UPDATABLE_FIELDS = new Set([
+  'address', 'address_no', 'postal_code', 'city'
+]);
 
+const ADDRESS_REQUIRED_ALL = ['address', 'address_no', 'postal_code', 'city']; // for initial insert
+
+//Utility functions
+function pickAllowed(obj = {}, allowed) {
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (allowed.has(k)) out[k] = v;
+  }
+  return out;
+}
+
+function buildSetClause(fields, paramOffset = 1) {
+  const keys = Object.keys(fields);
+  if (keys.length === 0) return { setSQL: '', params: [] };
+  const setSQL = keys.map((k, i) => `${k} = $${paramOffset + i}`).join(', ');
+  const params = keys.map(k => fields[k]);
+  return { setSQL, params };
+}
+
+function isEmpty(obj) {
+  return !obj || Object.keys(obj).length === 0;
+}
+
+function ensureISODate(dob) {
+  if (dob == null) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dob))) {
+    throw Object.assign(new Error('Λανθασμένη ημερομηνία γέννησης. Χρειάζεται "ΕΤΟΣ-ΜΗΝΑΣ-ΗΜΕΡΑ".'), { status: 400 });
+  }
+}
+
+function ensureInteger(n, field) {
+  if (n == null) return;
+  if (!Number.isInteger(Number(n))) {
+    throw Object.assign(new Error(`${field} πρέπει να είναι ακέραιος.`), { status: 400 });
+  }
+}
+async function upsertAddressForEmail(client, email, addressFields) {
+  if (isEmpty(addressFields)) return; // nothing to do
+
+  // Try UPDATE first
+  const { setSQL, params } = buildSetClause(addressFields, 1);
+  if (!setSQL) return;
+
+  const updateSQL = `
+    UPDATE address_details
+    SET ${setSQL}
+    WHERE email = $${params.length + 1}
+    RETURNING address, address_no, postal_code, city
+  `;
+  const upd = await client.query(updateSQL, [...params, email]);
+
+  if (upd.rowCount > 0) return upd.rows[0];
+
+  // No row to update → need INSERT; must have all required NOT NULL fields
+  for (const required of ADDRESS_REQUIRED_ALL) {
+    if (!(required in addressFields)) {
+      throw Object.assign(
+        new Error(`Δεν υπάρχει αυτή η διεύθυνση στην βάση δεδομένων. Υπολείπεται το πεδίο '${required}' για την δημιουργία της.`),
+        { status: 400 }
+      );
+    }
+  }
+
+  const cols = ['email', ...Object.keys(addressFields)];
+  const vals = [email, ...Object.values(addressFields)];
+  const placeholders = cols.map((_, i) => `$${i + 1}`).join(', ');
+
+  const insertSQL = `
+    INSERT INTO address_details (${cols.join(', ')})
+    VALUES (${placeholders})
+    RETURNING address, address_no, postal_code, city
+  `;
+  const ins = await client.query(insertSQL, vals);
+  return ins.rows[0];
+}
+
+export async function updateUser(req, res) {
+  const actor = req.user; // action performer
+  const {
+    target_email,       // REQUIRED
+    user_fields = {},   // OPTIONAL
+    address_fields = {} // OPTIONAL
+  } = req.body || {};
+
+  try {
+    if (!target_email) {
+      throw Object.assign(new Error('Χρειάζεται το email του χρήστη που θα πραγματοποιηθούν οι αλλαγές.'), { status: 400 });
+    }
+
+    // Authorisation: only admins can update others; only admins can change user_type
+    //αρχη TODO
+    const isSelf = actor?.email === target_email;
+    const canManageUsers = isSelf ? false : await userHasPermission(actor?.email, 'update_user');
+
+    if (!isSelf && !canManageUsers) {
+      throw Object.assign(new Error('Δεν μπορείτε να πραγματοποιήσετε αλλαγές σε άλλους χρήστες.'), { status: 403 });
+    }
+
+    // No email change allowed here
+    if ('email' in user_fields) {
+      throw Object.assign(new Error('Το email δεν μπορεί να αλλάξει από αυτό το σημείο.'), { status: 400 });
+    }
+    //Τέλος TODO
+
+    // Whitelist fields
+    const allowedUserFields = pickAllowed(user_fields, USER_UPDATABLE_FIELDS);
+    // TODO user type only from admins
+    // if (canManageUsers && 'user_type' in user_fields) {
+    //   allowedUserFields.user_type = user_fields.user_type;
+    // }
+
+    const allowedAddressFields = pickAllowed(address_fields, ADDRESS_UPDATABLE_FIELDS);
+
+    if (isEmpty(allowedUserFields) && isEmpty(allowedAddressFields)) {
+      throw Object.assign(new Error('Δεν δόθηκαν έγκυρα πεδία για ενημέρωση στοιχείων'), { status: 400 });
+    }
+
+    // Light validation
+    if ('dob' in allowedUserFields) ensureISODate(allowedUserFields.dob);
+    if ('postal_code' in allowedAddressFields) ensureInteger(allowedAddressFields.postal_code, 'postal_code');
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Update users if needed
+      if (!isEmpty(allowedUserFields)) {
+        const { setSQL, params } = buildSetClause(allowedUserFields, 1);
+        const sql = `
+          UPDATE users
+          SET ${setSQL}
+          WHERE email = $${params.length + 1}
+          RETURNING
+            email,
+            first_name,
+            last_name,
+            to_char(dob, 'YYYY-MM-DD') AS dob,
+            birth_place,
+            phone_no,
+            mobile,
+            occupation,
+            user_type
+        `;
+        const r = await client.query(sql, [...params, target_email]);
+        if (r.rows.length === 0) {
+          throw Object.assign(new Error('No user found with that email'), { status: 404 });
+        }
+      } else {
+        // No user fields changed → still ensure user exists
+        const r = await client.query(
+          `SELECT email,
+                  first_name,
+                  last_name,
+                  to_char(dob,'YYYY-MM-DD') AS dob,
+                  birth_place,
+                  phone_no,
+                  mobile,
+                  occupation,
+                  user_type
+             FROM users WHERE email = $1`,
+          [target_email]
+        );
+        if (r.rows.length === 0) {
+          throw Object.assign(new Error('No user found with that email'), { status: 404 });
+        }
+      }
+
+      // Update/insert address if needed
+      if (!isEmpty(allowedAddressFields)) {
+        await upsertAddressForEmail(client, target_email, allowedAddressFields);
+      } else {
+        // fetch existing address (if any) to return a complete picture
+        const addr = await client.query(
+          `SELECT address, address_no, postal_code, city
+             FROM address_details WHERE email = $1`,
+          [target_email]
+        );
+      }
+
+      await client.query('COMMIT');
+
+      // Final truth from DB (single JOIN), also doubles as a “RETURNING sanity check”
+      const final = await pool.query(
+        `SELECT u.email, u.first_name, u.last_name, to_char(u.dob,'YYYY-MM-DD') AS dob,
+                u.birth_place, u.phone_no, u.mobile, u.occupation, u.user_type,
+                a.address, a.address_no, a.postal_code, a.city
+           FROM users u
+           LEFT JOIN address_details a USING (email)
+          WHERE u.email = $1`,
+        [target_email]
+      );
+
+      // audit log (keep it simple; wire to your logger)
+      console.info('User update:', {
+        actor_email: actor?.email,
+        actor_role: actor?.user_type,
+        target_email,
+        changed_user_fields: Object.keys(allowedUserFields),
+        changed_address_fields: Object.keys(allowedAddressFields)
+      });
+
+      res.status(200).json({
+        message: 'Το προφίλ ενωμερώθηκε με επιτυχία.',
+        user: final.rows[0] // already safe (no password_hash)
+      });
+    } catch (err) {
+      await pool.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+
+  } catch (error) {
+    const status = error.status || 500;
+    console.error('updateUser error:', error);
+    res.status(status).json({ message: error.message || 'Error updating user' });
+  }
+}
