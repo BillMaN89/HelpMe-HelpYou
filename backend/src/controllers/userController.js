@@ -154,7 +154,7 @@ export async function deleteUserProfile(req, res) {
       await client.query('BEGIN');
 
       if (user.user_type === 'employee') {
-        const { reassignTo, force } = req.body ?? {};
+        const { reassignTo, unassignRequests } = req.body ?? {};
 
         // support requests check (assigned/in_progress)
         const { rows: active } = await client.query(
@@ -166,7 +166,7 @@ export async function deleteUserProfile(req, res) {
         );
 
         if (active.length) {
-          if (reassignTo && !force) {
+          if (reassignTo && !unassignRequests) {
             // reassignTo validity check
             const { rows: targetEmp } = await client.query(
               `SELECT 1 FROM users WHERE email = $1 AND user_type = 'employee'`,
@@ -187,12 +187,20 @@ export async function deleteUserProfile(req, res) {
               [reassignTo, emailToDelete]
             );
             // continue to delete flow
-          } else if (force) {
-            // Force delete: will set assigned_employee_email to NULL 
+          } else if (unassignRequests) {
+            await client.query(
+              `UPDATE support_requests
+               SET assigned_employee_email = null,
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE assigned_employee_email = $2
+                 AND status IN ('assigned','in_progress')`,
+              [emailToDelete]
+            );
           } else {
             await client.query('ROLLBACK');
             return res.status(409).json({
-              message: 'Ο υπάλληλος έχει ενεργές αναθέσεις. Πρέπει να ανατεθούν αλλού ή να γίνει force delete.',
+              message: 'Ο υπάλληλος έχει ενεργές αναθέσεις.' +
+              'Παρακαλώ επιλέξτε αν θέλετε να αναθέσετε εκ νέου τα αιτήματα σε άλλον υπάλληλο ή να τα αφήσετε χωρίς ανάθεση.',
               blocking_requests: active.map(r => r.request_id)
             });
           }
@@ -201,12 +209,8 @@ export async function deleteUserProfile(req, res) {
 
       // Delete user
       await client.query('DELETE FROM users WHERE email = $1', [emailToDelete]);
-      // CASCADE: address_details, patient_details, employee_details, volunteer_details,
-      // volunteer_availability, volunteer_help_type, user_roles, support_requests.user_email
-      // SET NULL: support_requests.assigned_employee_email (για employees) 
-
       await client.query('COMMIT');
-      return res.status(204).send();
+      return res.status(204).json({ message: 'Ο χρήστης διαγράφηκε με επιτυχία' });
     } catch (e) {
       await client.query('ROLLBACK');
       console.error('DB error on deleteUserProfile:', e);
@@ -219,6 +223,7 @@ export async function deleteUserProfile(req, res) {
     return res.status(500).json({ message: 'Σφάλμα κατά τη διαγραφή χρήστη' });
   }
 }
+
 
 async function userHasPermission(email, permission) {
   try {
