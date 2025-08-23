@@ -339,11 +339,12 @@ export async function updateUser(req, res) {
     }
 
     // Authorisation: only admins can update others; only admins can change user_type
-    //αρχη TODO
     const isSelf = actor?.email === target_email;
-    const canManageUsers = isSelf ? false : await userHasPermission(actor?.email, 'update_user');
+    const canUpdateUsers = isSelf ? false : await userHasPermission(actor?.email, 'update_user');
+    const canManageUsers = isSelf ? false : await userHasPermission(actor?.email, 'manage_users');
 
-    if (!isSelf && !canManageUsers) {
+
+    if (!isSelf && !canUpdateUsers) {
       throw Object.assign(new Error('Δεν μπορείτε να πραγματοποιήσετε αλλαγές σε άλλους χρήστες.'), { status: 403 });
     }
 
@@ -351,14 +352,12 @@ export async function updateUser(req, res) {
     if ('email' in user_fields) {
       throw Object.assign(new Error('Το email δεν μπορεί να αλλάξει από αυτό το σημείο.'), { status: 400 });
     }
-    //Τέλος TODO
 
     // Whitelist fields
     const allowedUserFields = pickAllowed(user_fields, USER_UPDATABLE_FIELDS);
-    // TODO user type only from admins
-    // if (canManageUsers && 'user_type' in user_fields) {
-    //   allowedUserFields.user_type = user_fields.user_type;
-    // }
+    if (canManageUsers && 'user_type' in user_fields) {
+      allowedUserFields.user_type = user_fields.user_type;
+    }
 
     const allowedAddressFields = pickAllowed(address_fields, ADDRESS_UPDATABLE_FIELDS);
 
