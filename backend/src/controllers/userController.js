@@ -1,4 +1,5 @@
 import { pool } from '../db/pool.js';
+import { isEmpty, ensureInteger } from '../utils/helpers.js';
 export async function getUserProfile(req, res){
     try {
         const email = req.user.email;
@@ -224,7 +225,6 @@ export async function deleteUserProfile(req, res) {
   }
 }
 
-
 async function userHasPermission(email, permission) {
   try {
     const { rows } = await pool.query(
@@ -273,10 +273,6 @@ function buildSetClause(fields, paramOffset = 1) {
   return { setSQL, params };
 }
 
-function isEmpty(obj) {
-  return !obj || Object.keys(obj).length === 0;
-}
-
 function ensureISODate(dob) {
   if (dob == null) return;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dob))) {
@@ -284,12 +280,6 @@ function ensureISODate(dob) {
   }
 }
 
-function ensureInteger(n, field) {
-  if (n == null) return;
-  if (!Number.isInteger(Number(n))) {
-    throw Object.assign(new Error(`${field} πρέπει να είναι ακέραιος.`), { status: 400 });
-  }
-}
 async function upsertAddressForEmail(client, email, addressFields) {
   if (isEmpty(addressFields)) return; // nothing to do
 
