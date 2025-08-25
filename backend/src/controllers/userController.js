@@ -1,117 +1,199 @@
 import { pool } from '../db/pool.js';
 import { isEmpty, ensureInteger } from '../utils/helpers.js';
-export async function getUserProfile(req, res){
-    try {
-        const email = req.user.email;
-        const profile = await getUserFullProfile(email);
 
-        res.status(200).json(profile);
-    } catch (error) {
-        console.error('Σφάλμα στο getUserProfile:', error);
-        res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση του προφίλ του χρήστη' });
+// Whitelisted fields for update
+const USER_UPDATABLE_FIELDS = new Set([
+  'first_name', 'last_name', 'dob', 'birth_place',
+  'phone_no', 'mobile', 'occupation', // user_type (admin only)
+]);
+const ADDRESS_UPDATABLE_FIELDS = new Set([
+  'address', 'address_no', 'postal_code', 'city'
+]);
+const ADDRESS_REQUIRED_ALL = ['address', 'address_no', 'postal_code', 'city'];
+
+//View own profile
+export async function getUserProfile(req, res) {
+  try {
+    const viewerEmail = req.user.email;
+    const full = await getUserFullProfile(viewerEmail);
+    const shaped = await shapeProfileForViewer(full, { viewerEmail, targetEmail: viewerEmail });
+    return res.status(200).json(shaped);
+  } catch (error) {
+    console.error('Σφάλμα στο getUserProfile:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση του προφίλ του χρήστη' });
+  }
+}
+
+//Admin view
+export async function getUserByEmail(req, res) {
+  try {
+    const targetEmail = req.params.email;
+    const viewerEmail = req.user.email;
+
+    if (targetEmail === viewerEmail) {
+      const full = await getUserFullProfile(targetEmail);
+      const shaped = await shapeProfileForViewer(full, { viewerEmail, targetEmail });
+      return res.status(200).json(shaped);
     }
-};
 
-export async function getUserByEmail(req, res){
+    const isViewerAdmin = await userHasPermission(viewerEmail, 'manage_roles');
+    if (!isViewerAdmin) {
+      return res.status(403).json({ message: 'Δεν έχετε πρόσβαση σε προφίλ άλλων χρηστών' });
+    }
+
+    const full = await getUserFullProfile(targetEmail);
+    const shaped = await shapeProfileForViewer(full, { viewerEmail, targetEmail });
+    return res.status(200).json(shaped);
+  } catch (error) {
+    console.error('Σφάλμα στο getUserByEmail:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση του χρήστη' });
+  }
+}
+
+//User update
+export async function updateUser(req, res) {
+  const actor = req.user; // action performer
+  const {
+    target_email,       // REQUIRED
+    user_fields = {},   // OPTIONAL
+    address_fields = {} // OPTIONAL
+  } = req.body || {};
+
+  try {
+    if (!target_email) {
+      throw Object.assign(new Error('Χρειάζεται το email του χρήστη που θα πραγματοποιηθούν οι αλλαγές.'), { status: 400 });
+    }
+
+    // Authorisation: self or has 'update_user' , admin can change user_type
+    const isSelf = actor?.email === target_email;
+    const canUpdateUsers = isSelf ? false : await userHasPermission(actor?.email, 'update_user');
+    const canManageUsers = isSelf ? false : await userHasPermission(actor?.email, 'manage_users');
+
+
+    if (!isSelf && !canUpdateUsers) {
+      throw Object.assign(new Error('Δεν μπορείτε να πραγματοποιήσετε αλλαγές σε άλλους χρήστες.'), { status: 403 });
+    }
+
+    // No email change allowed here
+    if ('email' in user_fields) {
+      throw Object.assign(new Error('Το email δεν μπορεί να αλλάξει από αυτό το σημείο.'), { status: 400 });
+    }
+
+    // Whitelist fields
+    const allowedUserFields = pickAllowed(user_fields, USER_UPDATABLE_FIELDS);
+    if (canManageUsers && 'user_type' in user_fields) {
+      allowedUserFields.user_type = user_fields.user_type;
+    }
+
+    const allowedAddressFields = pickAllowed(address_fields, ADDRESS_UPDATABLE_FIELDS);
+
+    if (isEmpty(allowedUserFields) && isEmpty(allowedAddressFields)) {
+      throw Object.assign(new Error('Δεν δόθηκαν έγκυρα πεδία για ενημέρωση στοιχείων'), { status: 400 });
+    }
+
+    // Light validation
+    if ('dob' in allowedUserFields) ensureISODate(allowedUserFields.dob);
+    if ('postal_code' in allowedAddressFields) ensureInteger(allowedAddressFields.postal_code, 'postal_code');
+
+    const client = await pool.connect();
     try {
-        const targetEmail = req.params.email;
-        const viewerEmail = req.user.email;
+      await client.query('BEGIN');
 
-        if(targetEmail === viewerEmail){
-            const profile = await getUserFullProfile(targetEmail);
-            return res.status(200).json(profile);
+      // Update users if needed
+      if (!isEmpty(allowedUserFields)) {
+        const { setSQL, params } = buildSetClause(allowedUserFields, 1);
+        const sql = `
+          UPDATE users
+          SET ${setSQL}
+          WHERE email = $${params.length + 1}
+          RETURNING
+            email,
+            first_name,
+            last_name,
+            to_char(dob, 'YYYY-MM-DD') AS dob,
+            birth_place,
+            phone_no,
+            mobile,
+            occupation,
+            user_type
+        `;
+        const r = await client.query(sql, [...params, target_email]);
+        if (r.rows.length === 0) {
+          throw Object.assign(new Error('Δεν βρέθηκε χρήστης με αυτό το email.'), { status: 404 });
         }
-        //temporary solution to prevent access to other users' profiles
-        return res.status(403).json({ message: 'Δεν έχετε πρόσβαση σε προφίλ άλλων χρηστών' });
-    } catch (error) {
-        console.error('Σφάλμα στο getUserByEmail:', error);
-        res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση του χρήστη' });
-    }       
-};
-
-//helper function
-export async function getUserFullProfile(email){   
-    try {
-        const userResult = await pool.query(
-            `SELECT
-                email,
-                first_name,
-                last_name,
-                to_char(dob, 'YYYY-MM-DD') AS dob,
-                birth_place,
-                phone_no,
-                mobile,
-                occupation,
-                user_type
-             FROM users
-             WHERE email = $1`,
-            [email]
+      } else {
+        // No user fields changed → still ensure user exists
+        const r = await client.query(
+          `SELECT email,
+                  first_name,
+                  last_name,
+                  to_char(dob,'YYYY-MM-DD') AS dob,
+                  birth_place,
+                  phone_no,
+                  mobile,
+                  occupation,
+                  user_type
+             FROM users WHERE email = $1`,
+          [target_email]
         );
-        
-        if(userResult.rows.length === 0){
-            throw { status: 404, message: "Ο χρήστης δεν βρέθηκε" };
+        if (r.rows.length === 0) {
+          throw Object.assign(new Error('Δεν βρέθηκε χρήστης με αυτό το email.'), { status: 404 });
         }
+      }
 
-        const user = sanitizeUser(userResult.rows[0]);
+      // Update/insert address if needed
+      if (!isEmpty(allowedAddressFields)) {
+        await upsertAddressForEmail(client, target_email, allowedAddressFields);
+      } else {
+        // fetch existing address
+        const addr = await client.query(
+          `SELECT address, address_no, postal_code, city
+             FROM address_details WHERE email = $1`,
+          [target_email]
+        );
+      }
 
-        // user_type sanity check
-        if (!user.user_type) {
-            throw { status: 500, message: 'Άδειο user_type μετά το sanitize' };
-        };      
+      await client.query('COMMIT');
 
-        switch (user.user_type) {
-            case 'patient':
-                const patientDetails = await pool.query(
-                    `SELECT * FROM patient_details WHERE email = $1`,
-                    [email]
-                );
-                user.details = patientDetails.rows[0] || {};
-                break;
-            
-            case 'volunteer':
-                const volunteerDetails = await pool.query(
-                    `SELECT * FROM volunteer_details WHERE email = $1`,
-                    [email]
-                );
-                user.details = volunteerDetails.rows[0] || {};
-                break;
-            
-            case 'employee':
-                const employeeDetails = await pool.query(
-                    `SELECT * FROM employee_details WHERE email = $1`,
-                    [email]
-                );
-                user.details = employeeDetails.rows[0] || {};
-                break;
-            
-            default:
-                throw { status: 400, message: 'Μη έγκυρος τύπος χρήστη' };
-        }
-        return user;
-          
-    } catch (error) {
-        console.error('Σφάλμα στο getUserFullProfile:', error);
-        throw error;
-    }      
-};
+      // Final truth from DB
+      const final = await pool.query(
+        `SELECT u.email, u.first_name, u.last_name, to_char(u.dob,'YYYY-MM-DD') AS dob,
+                u.birth_place, u.phone_no, u.mobile, u.occupation, u.user_type,
+                a.address, a.address_no, a.postal_code, a.city
+           FROM users u
+           LEFT JOIN address_details a USING (email)
+          WHERE u.email = $1`,
+        [target_email]
+      );
 
-//helper function to sanitize user data
-export function sanitizeUser(user) {
-    if (!user) {
-        return null;
+      // audit log
+      console.info('User update:', {
+        actor_email: actor?.email,
+        actor_role: actor?.user_type,
+        target_email,
+        changed_user_fields: Object.keys(allowedUserFields),
+        changed_address_fields: Object.keys(allowedAddressFields)
+      });
+
+      res.status(200).json({
+        message: 'Το προφίλ ενωμερώθηκε με επιτυχία.',
+        user: final.rows[0]
+      });
+    } catch (err) {
+      await pool.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
     }
 
-    // create copy for manipulation
-    const cleanUser = { ...user };
+  } catch (error) {
+    const status = error.status || 500;
+    console.error('updateUser error:', error);
+    res.status(status).json({ message: error.message || 'Σφάλμα κατά την ενημέρωση του χρήστη.' });
+  }
+}
 
-    // Remove sensitive information
-    if (cleanUser.password_hash) {
-        delete cleanUser.password_hash;
-    };  
-
-    return cleanUser;
-};
-
+//User delete
 export async function deleteUserProfile(req, res) {
   try {
     const requester = req.user.email;
@@ -208,7 +290,7 @@ export async function deleteUserProfile(req, res) {
         }
       }
 
-      // Delete user
+      // Delete action
       await client.query('DELETE FROM users WHERE email = $1', [emailToDelete]);
       await client.query('COMMIT');
       return res.status(204).json({ message: 'Ο χρήστης διαγράφηκε με επιτυχία' });
@@ -225,6 +307,7 @@ export async function deleteUserProfile(req, res) {
   }
 }
 
+//Helper functions
 async function userHasPermission(email, permission) {
   try {
     const { rows } = await pool.query(
@@ -243,20 +326,7 @@ async function userHasPermission(email, permission) {
     throw error;
   }
 }
-//User update function (users & address_details)
-//Input fields sanity check
-const USER_UPDATABLE_FIELDS = new Set([
-  'first_name', 'last_name', 'dob', 'birth_place',
-  'phone_no', 'mobile', 'occupation', /* 'user_type' allowed only for admins */
-]);
 
-const ADDRESS_UPDATABLE_FIELDS = new Set([
-  'address', 'address_no', 'postal_code', 'city'
-]);
-
-const ADDRESS_REQUIRED_ALL = ['address', 'address_no', 'postal_code', 'city']; // for initial insert
-
-//Utility functions
 function pickAllowed(obj = {}, allowed) {
   const out = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -320,144 +390,167 @@ async function upsertAddressForEmail(client, email, addressFields) {
   return ins.rows[0];
 }
 
-export async function updateUser(req, res) {
-  const actor = req.user; // action performer
-  const {
-    target_email,       // REQUIRED
-    user_fields = {},   // OPTIONAL
-    address_fields = {} // OPTIONAL
-  } = req.body || {};
-
+async function getUserFullProfile(email) {
   try {
-    if (!target_email) {
-      throw Object.assign(new Error('Χρειάζεται το email του χρήστη που θα πραγματοποιηθούν οι αλλαγές.'), { status: 400 });
-    }
+    //basic info
+    const { rows: urows } = await pool.query(
+      `SELECT
+         u.email, u.first_name, u.last_name,
+         to_char(u.dob, 'YYYY-MM-DD') AS dob,
+         u.birth_place, u.phone_no, u.mobile,
+         u.occupation, u.user_type,
+         a.address, a.address_no, a.postal_code, a.city
+       FROM users u
+       LEFT JOIN address_details a ON a.email = u.email
+       WHERE u.email = $1`,
+      [email]
+    );
+    if (!urows.length) throw { status: 404, message: 'Ο χρήστης δεν βρέθηκε' };
 
-    // Authorisation: only admins can update others; only admins can change user_type
-    const isSelf = actor?.email === target_email;
-    const canUpdateUsers = isSelf ? false : await userHasPermission(actor?.email, 'update_user');
-    const canManageUsers = isSelf ? false : await userHasPermission(actor?.email, 'manage_users');
+    const base = urows[0];
 
+    //roles + permissions
+    const { rows: rrows } = await pool.query(
+      `SELECT ur.role_name
+         FROM user_roles ur
+        WHERE ur.email = $1`,
+      [email]
+    );
+    const roles = rrows.map(r => r.role_name);
 
-    if (!isSelf && !canUpdateUsers) {
-      throw Object.assign(new Error('Δεν μπορείτε να πραγματοποιήσετε αλλαγές σε άλλους χρήστες.'), { status: 403 });
-    }
+    const { rows: prows } = await pool.query(
+      `SELECT DISTINCT rp.permission_name
+         FROM user_roles ur
+         JOIN role_permissions rp ON rp.role_name = ur.role_name
+        WHERE ur.email = $1
+        ORDER BY rp.permission_name`,
+      [email]
+    );
+    const permissions = prows.map(p => p.permission_name);
 
-    // No email change allowed here
-    if ('email' in user_fields) {
-      throw Object.assign(new Error('Το email δεν μπορεί να αλλάξει από αυτό το σημείο.'), { status: 400 });
-    }
-
-    // Whitelist fields
-    const allowedUserFields = pickAllowed(user_fields, USER_UPDATABLE_FIELDS);
-    if (canManageUsers && 'user_type' in user_fields) {
-      allowedUserFields.user_type = user_fields.user_type;
-    }
-
-    const allowedAddressFields = pickAllowed(address_fields, ADDRESS_UPDATABLE_FIELDS);
-
-    if (isEmpty(allowedUserFields) && isEmpty(allowedAddressFields)) {
-      throw Object.assign(new Error('Δεν δόθηκαν έγκυρα πεδία για ενημέρωση στοιχείων'), { status: 400 });
-    }
-
-    // Light validation
-    if ('dob' in allowedUserFields) ensureISODate(allowedUserFields.dob);
-    if ('postal_code' in allowedAddressFields) ensureInteger(allowedAddressFields.postal_code, 'postal_code');
-
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-
-      // Update users if needed
-      if (!isEmpty(allowedUserFields)) {
-        const { setSQL, params } = buildSetClause(allowedUserFields, 1);
-        const sql = `
-          UPDATE users
-          SET ${setSQL}
-          WHERE email = $${params.length + 1}
-          RETURNING
-            email,
-            first_name,
-            last_name,
-            to_char(dob, 'YYYY-MM-DD') AS dob,
-            birth_place,
-            phone_no,
-            mobile,
-            occupation,
-            user_type
-        `;
-        const r = await client.query(sql, [...params, target_email]);
-        if (r.rows.length === 0) {
-          throw Object.assign(new Error('No user found with that email'), { status: 404 });
-        }
-      } else {
-        // No user fields changed → still ensure user exists
-        const r = await client.query(
-          `SELECT email,
-                  first_name,
-                  last_name,
-                  to_char(dob,'YYYY-MM-DD') AS dob,
-                  birth_place,
-                  phone_no,
-                  mobile,
-                  occupation,
-                  user_type
-             FROM users WHERE email = $1`,
-          [target_email]
-        );
-        if (r.rows.length === 0) {
-          throw Object.assign(new Error('No user found with that email'), { status: 404 });
-        }
-      }
-
-      // Update/insert address if needed
-      if (!isEmpty(allowedAddressFields)) {
-        await upsertAddressForEmail(client, target_email, allowedAddressFields);
-      } else {
-        // fetch existing address (if any) to return a complete picture
-        const addr = await client.query(
-          `SELECT address, address_no, postal_code, city
-             FROM address_details WHERE email = $1`,
-          [target_email]
-        );
-      }
-
-      await client.query('COMMIT');
-
-      // Final truth from DB (single JOIN), also doubles as a “RETURNING sanity check”
-      const final = await pool.query(
-        `SELECT u.email, u.first_name, u.last_name, to_char(u.dob,'YYYY-MM-DD') AS dob,
-                u.birth_place, u.phone_no, u.mobile, u.occupation, u.user_type,
-                a.address, a.address_no, a.postal_code, a.city
-           FROM users u
-           LEFT JOIN address_details a USING (email)
-          WHERE u.email = $1`,
-        [target_email]
+    //user type details
+    let details = {};
+    if (base.user_type === 'patient') {
+      const { rows } = await pool.query(
+        `SELECT disease_type, handicap, emergency_contact
+           FROM patient_details WHERE email = $1`,
+        [email]
       );
+      details = rows[0] || {};
+    } else if (base.user_type === 'employee') {
+      const { rows } = await pool.query(
+        `SELECT employee_type, department, has_vehicle
+           FROM employee_details WHERE email = $1`,
+        [email]
+      );
+      details = rows[0] || {};
+    } else if (base.user_type === 'volunteer') {
+      const { rows } = await pool.query(
+        `SELECT v.has_vehicle, v.occupation
+           FROM volunteer_details v
+          WHERE v.email = $1`,
+        [email]
+      );
+      details = rows[0] || {};
 
-      // audit log (keep it simple; wire to your logger)
-      console.info('User update:', {
-        actor_email: actor?.email,
-        actor_role: actor?.user_type,
-        target_email,
-        changed_user_fields: Object.keys(allowedUserFields),
-        changed_address_fields: Object.keys(allowedAddressFields)
-      });
-
-      res.status(200).json({
-        message: 'Το προφίλ ενωμερώθηκε με επιτυχία.',
-        user: final.rows[0] // already safe (no password_hash)
-      });
-    } catch (err) {
-      await pool.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
+      // help_types για volunteer
+      const { rows: hrows } = await pool.query(
+        `SELECT ht.help_type_id, ht.help_category
+           FROM volunteer_help_type vht
+           JOIN help_types ht ON ht.help_type_id = vht.help_type_id
+          WHERE vht.email = $1
+          ORDER BY ht.help_type_id`,
+        [email]
+      );
+      details.help_types = hrows.map(h => ({
+        help_type_id: h.help_type_id,
+        help_category: h.help_category,
+      }));
+    } else {
+      throw { status: 400, message: 'Μη έγκυρος τύπος χρήστη' };
     }
 
+    //profile assembly
+    const profile = {
+      email: base.email,
+      first_name: base.first_name,
+      last_name: base.last_name,
+      dob: base.dob,
+      birth_place: base.birth_place,
+      phone_no: base.phone_no,
+      mobile: base.mobile,
+      occupation: base.occupation,
+      user_type: base.user_type,
+      address: {
+        address: base.address,
+        address_no: base.address_no,
+        postal_code: base.postal_code,
+        city: base.city,
+      },
+      roles,
+      permissions,
+      details,
+    };
+
+    return profile;
   } catch (error) {
-    const status = error.status || 500;
-    console.error('updateUser error:', error);
-    res.status(status).json({ message: error.message || 'Error updating user' });
+    console.error('Σφάλμα στο getUserFullProfile:', error);
+    throw error;
   }
+}
+
+// Shape profile for viewer using permission-based admin check
+// - Admin (has 'manage_roles') -> sees everything
+// - Non-admin self -> limited per user_type
+// - Non-admin viewing others -> controller should 403 before calling this
+async function shapeProfileForViewer(profile, { viewerEmail, targetEmail }) {
+  const isAdmin = await userHasPermission(viewerEmail, 'manage_roles');
+  const isSelf = viewerEmail === targetEmail;
+
+  const shaped = {
+    email: profile.email,
+    first_name: profile.first_name,
+    last_name: profile.last_name,
+    dob: profile.dob,
+    birth_place: profile.birth_place,
+    phone_no: profile.phone_no,
+    mobile: profile.mobile,
+    occupation: profile.occupation,
+    user_type: profile.user_type,
+    address: profile.address ?? null,
+  };
+
+  if (isAdmin) {
+    return {
+      ...shaped,
+      roles: profile.roles ?? [],
+      permissions: profile.permissions ?? [],
+      details: profile.details ?? {},
+    };
+  }
+
+  if (isSelf) {
+    if (profile.user_type === 'patient') {
+      shaped.details = {
+        disease_type: profile.details?.disease_type ?? null,
+        handicap: profile.details?.handicap ?? null,
+        emergency_contact: profile.details?.emergency_contact ?? null,
+      };
+    } else if (profile.user_type === 'volunteer') {
+      shaped.details = {
+        occupation: profile.details?.occupation ?? null,
+        has_vehicle: !!profile.details?.has_vehicle,
+        help_types: Array.isArray(profile.details?.help_types) ? profile.details.help_types : [],
+      };
+    } else if (profile.user_type === 'employee') {
+      shaped.details = {
+        department: profile.details?.department ?? null,
+        has_vehicle: !!profile.details?.has_vehicle,
+      };
+    } else {
+      shaped.details = {};
+    }
+  }
+
+  return shaped;
 }
