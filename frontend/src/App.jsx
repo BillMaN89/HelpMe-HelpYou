@@ -1,26 +1,23 @@
-import { useState } from 'react'
-import './index.css'
-import RootLayout from './layouts/RootLayout'
-import HomePage from './pages/HomePage'
+import { BrowserRouter, Routes, Route} from 'react-router-dom';
+import './index.css';
+import RootLayout from './layouts/RootLayout';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import NotFoundPage from './pages/NotFoundPage';
+
 
 export default function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <RootLayout>
-      <HomePage />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
     </RootLayout>
-    // <>
-    //   <div>
-    //     <h1 className='text-3xl font-bold underline text-red-500'>Ώρα για πτυχιακή frontend baby!</h1>
-    //   </div>
-    //   <div className="card">
-    //     <button onClick={() => setCount((count) => count + 1)}>
-    //       count is {count}
-    //     </button>
-    //   </div>
-    //   <p>Hello there!</p>
-    // </>
   )
 }
 
