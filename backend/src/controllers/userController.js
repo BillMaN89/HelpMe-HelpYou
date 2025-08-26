@@ -176,7 +176,7 @@ export async function updateUser(req, res) {
       });
 
       res.status(200).json({
-        message: 'Το προφίλ ενωμερώθηκε με επιτυχία.',
+        message: 'Το προφίλ ενημερώθηκε με επιτυχία.',
         user: final.rows[0]
       });
     } catch (err) {
@@ -275,7 +275,7 @@ export async function deleteUserProfile(req, res) {
               `UPDATE support_requests
                SET assigned_employee_email = null,
                    updated_at = CURRENT_TIMESTAMP
-               WHERE assigned_employee_email = $2
+               WHERE assigned_employee_email = $1
                  AND status IN ('assigned','in_progress')`,
               [emailToDelete]
             );
