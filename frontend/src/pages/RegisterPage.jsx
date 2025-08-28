@@ -213,12 +213,12 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <label htmlFor="phone_no" className="block text-sm font-medium text-gray-700">Σταθερό Τηλέφωνο</label>
-                  <Field id="phone_no" name="phone_no" type="text" placeholder="+30 2101234567" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
+                  <Field id="phone_no" name="phone_no" type="text" placeholder="2101234567" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="phone_no" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
                   <label htmlFor="mobile" className="block text-sm font-medium text-gray-700">Κινητό Τηλέφωνο</label>
-                  <Field id="mobile" name="mobile" type="text" placeholder="+30 6901234567" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
+                  <Field id="mobile" name="mobile" type="text" placeholder="6901234567" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="mobile" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
               </div>
