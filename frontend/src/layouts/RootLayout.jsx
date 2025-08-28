@@ -1,7 +1,12 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+
 export default function RootLayout({ children }) {
   return (
     <div className="min-h-dvh bg-slate-50 text-slate-900">
       {/* Skip to content (a11y) */}
+      <ToastContainer position="top-right" autoClose={2500} newestOnTop theme="light" />
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-white border px-3 py-2 rounded-md shadow"

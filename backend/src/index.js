@@ -35,3 +35,11 @@ pool.query('SELECT NOW()', (err, res) => {
         console.log('DB connected. Current time:', res.rows[0].now);
     }
 });
+
+//cors alternative configuration
+// app.use(cors({
+//   origin: "http://localhost:5173",
+//   credentials: false, //needs true in case of cookies
+//   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+// }));

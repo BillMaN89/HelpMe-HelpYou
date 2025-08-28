@@ -2,7 +2,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import http from '../shared/shared/lib/http';
+import http from '../shared/lib/http';
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
@@ -48,8 +48,8 @@ export default function LoginPage() {
               if (data?.access_token) {
                 localStorage.setItem("access_token", data.access_token);
               }
-              // Navigate to dashboard/home after successful login -- needs to be changed
-              toast.success("Επιτυχής σύνδεση!");
+              // Navigate to dashboard/home after successful login -- needs to be changed               <------------
+              toast.success("Συνδέθηκες επιτυχώς! 🎉");
               navigate("/");
             } catch (err) {
               const msg =
@@ -121,7 +121,7 @@ export default function LoginPage() {
                       disabled={isSubmitting || loading}
                       className="w-full"
                     >
-                      {loading ? "Σύνδεση..." : "Υποβολή"}
+                      {loading ? "Σύνδεση..." : "Σύνδεση"}
                     </Button>
 
                     <Button
@@ -143,8 +143,11 @@ export default function LoginPage() {
         </Formik>
 
         {/* Footer helper */}
-        <p className="mt-6 text-center text-xs text-gray-500">
+        {/* <p className="mt-6 text-center text-xs text-gray-500">
           Ξεχάσατε τον κωδικό; <Link to="/forgot-password" className="underline">Ανάκτηση</Link>
+        </p> */}
+        <p className="mt-6 text-center text-xs text-gray-500">
+          Δεν έχετε λογαριασμό; <Link to="/register" className="underline">Εγγραφή</Link>
         </p>
         <Link to="/" className="block">
           <Button variant="outline" className="w-full">
@@ -155,3 +158,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+
