@@ -6,6 +6,8 @@ import http from '../shared/lib/http';
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
+import { API } from '../shared/constants/api';
+import { useAuth } from '../components/auth/AuthContext';
 
 const LoginSchema = Yup.object({
   email: Yup.string()
@@ -18,6 +20,7 @@ const LoginSchema = Yup.object({
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -43,14 +46,17 @@ export default function LoginPage() {
             setLoading(true);
             try {
               // endpoint
-              const { data } = await http.post("/auth/login", values);
+              const { data } = await http.post(API.AUTH.LOGIN, values);
+              console.log("LOGIN response:", data);
               // token storage
-              if (data?.access_token) {
-                localStorage.setItem("access_token", data.access_token);
+              if (data?.token) {
+                localStorage.setItem("access_token", data.token);
               }
-              // Navigate to dashboard/home after successful login -- needs to be changed               <------------
+              // Navigate to dashboard/home after successful login
+              const me = await http.get(API.USERS.ME);
+              setUser(me.data);
               toast.success("Συνδέθηκες επιτυχώς! 🎉");
-              navigate("/");
+              navigate("/app", { replace: true });
             } catch (err) {
               const msg =
                 err?.response?.data?.message ||

@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
+import { Outlet } from 'react-router-dom';
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ }) {
   return (
     <div className="min-h-dvh bg-slate-50 text-slate-900">
       {/* Skip to content (a11y) */}
@@ -29,7 +29,7 @@ export default function RootLayout({ children }) {
 
       {/* Main */}
       <main id="main" className="mx-auto max-w-6xl px-4 py-8">
-        {children}
+       <Outlet />
       </main>
 
       {/* Footer */}
