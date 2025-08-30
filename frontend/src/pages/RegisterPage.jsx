@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import http from '../shared/lib/http';
+import { API } from '../shared/constants/api';
 
 // ----- Validation -----
 const RegisterSchema = Yup.object({
@@ -104,12 +105,12 @@ export default function RegisterPage() {
             try {
               const payload = { ...values };
               delete payload.confirmPassword; // δεν χρειάζεται στο backend
-              const { data } = await http.post('/auth/register', payload);
+              const { data } = await http.post(API.AUTH.REGISTER, payload);
               if (data?.access_token) {
                 localStorage.setItem('access_token', data.access_token);
               }
               toast.success('Εγγραφή επιτυχής! 🎉');
-              navigate('/');
+              navigate('/app', { replace: true });
             } catch (err) {
               const msg = err?.response?.data?.message || err?.message || 'Κάτι πήγε στραβά. Προσπαθήστε ξανά.';
               setServerError(msg);

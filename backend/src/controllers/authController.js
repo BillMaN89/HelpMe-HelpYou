@@ -175,7 +175,7 @@ export const registerUser = async (req, res) => {
       }
     }
 
-    const role_name = resolveRoleForUser(user_type, department);
+    const role_name = resolveRoleForUser(user_type, department, employee_type);
     if (!role_name) {
       throw new Error('Αδυναμία αντιστοίχισης ρόλου για τον χρήστη.');
     }
@@ -189,6 +189,17 @@ export const registerUser = async (req, res) => {
       `INSERT INTO user_roles (email, role_name) VALUES ($1,$2)`,
       [normalizedEmail, role_name]
     );
+
+    //permissions for debugging
+    const { rows: permRows } = await client.query(
+      `SELECT DISTINCT rp.permission_name
+      FROM user_roles ur
+      JOIN role_permissions rp ON rp.role_name = ur.role_name
+      WHERE ur.email = $1
+      ORDER BY rp.permission_name`,
+      [normalizedEmail]
+    );
+    const permissions = permRows.map(r => r.permission_name);
 
     await client.query('COMMIT');
     return res.status(201).json({ 
@@ -207,7 +218,8 @@ export const registerUser = async (req, res) => {
         address: { address, address_no, postal_code: ensureInteger(postal_code), city },
         patient_details: user_type === 'patient' ? { disease_type, handicap: ensureInteger(handicap), emergency_contact } : undefined,
         employee_details: user_type === 'employee' ? { employee_type, department, has_vehicle: Boolean(has_vehicle) } : undefined,
-        volunteer_details: user_type === 'volunteer' ? { occupation, has_vehicle: Boolean(has_vehicle), help_types: help_types || [] } : undefined
+        volunteer_details: user_type === 'volunteer' ? { occupation, has_vehicle: Boolean(has_vehicle), help_types: help_types || [] } : undefined,
+        permissions
       }
     });
   } catch (err) {
@@ -220,25 +232,27 @@ export const registerUser = async (req, res) => {
   }
 };
 
-export function resolveRoleForUser(user_type, department) {
-  if (user_type === 'patient') return 'patient';
-  if (user_type === 'volunteer') return 'volunteer';
-  if (user_type === 'employee') {
-    switch (department) {
-      case 'psychological_services':
-        return 'therapist';
-      case 'social_services':
-        return 'social_worker';
-      case 'administration':
-        return 'secretary';
+export function resolveRoleForUser(user_type, department, employee_type) {
+  const ut = (user_type || '').toLowerCase().trim();
+  const dept = (department || '').toLowerCase().trim();
+  const empType = (employee_type || '').toLowerCase().trim();
+
+  if (ut === 'patient') return 'patient';
+  if (ut === 'volunteer') return 'volunteer';
+  if (ut === 'employee') {
+    if (et === 'board_member') return 'viewer'; 
+
+    switch (dept) {
+      case 'psychological_services': return 'therapist';
+      case 'social_services':        return 'social_worker';
+      case 'administration':         return 'secretary';
       case 'board_of_directors':
-      case 'management':
-        return 'viewer';
-      default:
-        return null;
+      case 'management':             return 'viewer';
+      default:                       return null; 
     }
   }
-  return null;
+
+  return null; //unknown user_type
 }
 
 // Alternative: Config-based mapping instead of switch

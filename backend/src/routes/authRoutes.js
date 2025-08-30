@@ -10,8 +10,4 @@ router.post('/register', registerUser);
 // Route για login χρήστη
 router.post('/login', loginUser);
 
-
-
-
-
 export default router;
