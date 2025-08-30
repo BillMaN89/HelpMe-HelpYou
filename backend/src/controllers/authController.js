@@ -3,40 +3,60 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { isEmpty, ensureInteger, validateRequired } from '../utils/helpers.js';
 import dotenv from "dotenv";
+import { getUserRolesAndPermissions } from '../utils/helpers.js';
 
 export const loginUser = async (req, res) => {
-  const {email, password} = req.body;
-   try {
-    // Έλεγχος αν υπάρχει ο χρήστης
-    const user = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
-    );
+  const { email, password } = req.body;
 
-    if (user.rows.length === 0) {
+  try {
+    const normalizedEmail = String(email).trim().toLowerCase();
+
+    //check if user exists
+    const { rows } = await pool.query(
+      `SELECT email, first_name, last_name, user_type, password_hash
+       FROM users
+       WHERE email = $1`,
+      [normalizedEmail]
+    );
+    if (!rows.length) {
       return res.status(401).json({ message: 'Λάθος στοιχεία σύνδεσης' });
     }
 
-    // Έλεγχος κωδικού
-    const isPasswordValid = await bcrypt.compare(password, user.rows[0].password_hash);
-
+    const u = rows[0];
+    const isPasswordValid = await bcrypt.compare(password, u.password_hash);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Λάθος στοιχεία σύνδεσης' });
     }
 
-    // Δημιουργία token
-    const { user_type } = user.rows[0];
+    // roles + permissions
+    const { roles, permissions } = await getUserRolesAndPermissions(normalizedEmail);
 
+    // Token
     const token = jwt.sign(
-      { email, user_type },
+      {
+        email: normalizedEmail,
+        user_type: u.user_type,
+        roles,
+        permissions,
+      },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
-    // Αποστολή token στον xρήστη
-    res.status(200).json({ token });
-   } catch (error) {
+
+    return res.status(200).json({
+      token,
+      user: {
+        email: normalizedEmail,
+        first_name: u.first_name,
+        last_name: u.last_name,
+        user_type: u.user_type,
+      },
+      roles,
+      permissions,
+    });
+  } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Σφάλμα κατά την είσοδο' });
+    return res.status(500).json({ message: 'Σφάλμα κατά την είσοδο' });
   }
 };
 

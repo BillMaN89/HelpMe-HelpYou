@@ -1,4 +1,3 @@
-// src/components/nav/navConfig.js
 export const NAV_ITEMS = [
   { key: 'home', label: 'Αρχική', to: '/', icon: 'Home', all: true },
   { key: 'myRequests', label: 'Τα αιτήματά μου', to: '/requests/mine',

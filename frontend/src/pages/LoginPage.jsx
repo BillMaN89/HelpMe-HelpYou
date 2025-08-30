@@ -54,7 +54,7 @@ export default function LoginPage() {
               }
               // Navigate to dashboard/home after successful login
               const me = await http.get(API.USERS.ME);
-              setUser(me.data);
+              setUser({ ...data.user, roles: data.roles, permissions: data.permissions });
               toast.success("Συνδέθηκες επιτυχώς! 🎉");
               navigate("/app", { replace: true });
             } catch (err) {
