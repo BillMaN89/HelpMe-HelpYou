@@ -1,4 +1,4 @@
-import { pool } from '../config/db.js';
+import { pool } from "../db/pool.js";
 
 export function isEmpty(obj) {
   return !obj || Object.keys(obj).length === 0;
