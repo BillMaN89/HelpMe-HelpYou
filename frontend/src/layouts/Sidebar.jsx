@@ -14,7 +14,7 @@ export default function Sidebar() {
     });
 
     return (
-        <aside className="hidden w-64 shrink-0 border-r bg-white p-3 lg:block">
+        <aside className="hidden w-64 shrink-0 bg-white p-3 lg:block">
         <nav className="space-y-1">
             {items.map(it => (
             <NavLink

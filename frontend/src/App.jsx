@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import ProfilePage from "./pages/ProfilePage";
 
 import { RequireLogin } from "./components/auth/Guards";
 import { AuthProvider } from "./components/auth/AuthContext";
@@ -32,7 +33,7 @@ function AppRoutes() {
         <Route element={<AppLayout />}>
           <Route path="app" element={<DashboardPage />} />
           <Route path="app/requests" element={<div>Requests</div>} />
-          <Route path="app/profile" element={<div>Profile</div>} />
+          <Route path="app/profile" element={<ProfilePage />} />
           {/* private routes placeholder */}
         </Route>
       </Route>

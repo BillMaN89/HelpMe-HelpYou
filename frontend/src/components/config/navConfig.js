@@ -1,9 +1,9 @@
 export const NAV_ITEMS = [
   { key: 'home', label: 'Αρχική', to: '/app', icon: 'Home', all: true },
   { key: 'myRequests', label: 'Τα αιτήματά μου', to: '/requests/mine',
-    requireAnyPerm: ['view_own_requests'], showFor: ['patient'] },
+    requireAnyPerm: ['view_own_requests'], showFor: ['patient', 'volunteer'] },
   { key: 'newRequest', label: 'Νέο αίτημα', to: '/requests/new',
-    requireAnyPerm: ['create_request'], showFor: ['patient'] },
+    requireAnyPerm: ['create_request'], showFor: ['patient', 'volunteer'] },
   { key: 'requests', label: 'Αιτήματα', to: '/requests',
     requireAnyPerm: ['view_requests'], showFor: ['therapist','social_worker','secretary','admin'] },
   { key: 'assign', label: 'Αναθέσεις', to: '/requests/unassigned',

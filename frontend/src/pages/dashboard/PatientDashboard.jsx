@@ -31,16 +31,3 @@ export default function PatientDashboard() {
     </div>
   );
 }
-
-// function Tile({ to, title, desc, emoji }) {
-//   return (
-//     <Link
-//       to={to}
-//       className="rounded-2xl p-5 shadow hover:shadow-md bg-white border border-slate-100 transition"
-//     >
-//       <div className="text-3xl mb-2">{emoji}</div>
-//       <div className="text-lg font-semibold">{title}</div>
-//       {desc && <div className="text-slate-500 text-sm mt-1">{desc}</div>}
-//     </Link>
-//   );
-// }
