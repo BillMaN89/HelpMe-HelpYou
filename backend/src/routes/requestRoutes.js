@@ -8,7 +8,7 @@ router.use(verifyToken);
 
 //Δημιουργία αιτήματος υποστήριξης
 router.post('/', 
-    requirePermission(['create_requests']),
+    requirePermission(['create_request']),
     createSupportRequest);
    
 //Προβολή προσωπικών αιτημάτων υποστήριξης
@@ -19,7 +19,7 @@ router.get('/',
 //Προβολή όλων των αιτημάτων υποστήριξης
 // Επιτρέπει πρόσβαση μόνο σε υπάλληλους και admins
 router.get('/all-requests', 
-    requirePermission(['view_all_requests']),
+    requirePermission(['view_requests']),
     getAllSupportRequests);
 
 //Ανάθεση αιτήματος

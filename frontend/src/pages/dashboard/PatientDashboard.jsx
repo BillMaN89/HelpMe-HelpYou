@@ -23,7 +23,7 @@ export default function PatientDashboard() {
         <FancyTile
           to="/app/requests/new"
           title="Νέο αίτημα"
-          desc="Ξεκίνα ένα νέο αίτημα υποστήριξης."
+          desc="Καταχώρησε ένα νέο αίτημα υποστήριξης."
           Icon={PlusCircle}
           tone="primary"
         />

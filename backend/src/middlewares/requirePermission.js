@@ -5,7 +5,7 @@ export function requirePermission(requiredPermissions) {
 
   return async (req, res, next) => {
     const { email } = req.user;
-    
+
     if (!email) {
       return res.status(401).json({ message: 'Δεν εντοπίστηκε χρήστης' });
     }

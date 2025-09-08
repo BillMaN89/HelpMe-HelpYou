@@ -47,7 +47,8 @@ export default function LoginPage() {
             try {
               // endpoint
               const { data } = await http.post(API.AUTH.LOGIN, values);
-              console.log("LOGIN response:", data);
+              //debug log
+              //console.log("LOGIN response:", data);
               // token storage
               if (data?.token) {
                 localStorage.setItem("access_token", data.token);
@@ -140,7 +141,7 @@ export default function LoginPage() {
                         resetForm();
                       }}
                     >
-                      Reset
+                      Επαναφορά
                     </Button>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import "./index.css";
 
 import RootLayout from "./layouts/RootLayout";   // Public layout
@@ -10,6 +10,8 @@ import RegisterPage from "./pages/RegisterPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
+import RequestCreatePage from "./pages/requests/RequestCreatePage";
+import RequestForm from "./pages/requests/RequestForm";
 
 import { RequireLogin } from "./components/auth/Guards";
 import { AuthProvider } from "./components/auth/AuthContext";
@@ -30,11 +32,13 @@ function AppRoutes() {
 
       {/* Protected area */}
       <Route element={<RequireLogin />}>
-        <Route element={<AppLayout />}>
-          <Route path="app" element={<DashboardPage />} />
-          <Route path="app/requests" element={<div>Requests</div>} />
-          <Route path="app/profile" element={<ProfilePage />} />
-          {/* private routes placeholder */}
+        <Route path="app" element={<AppLayout />}>
+          <Route index element={<DashboardPage />} />
+          {/* Requests */}
+          <Route path="requests" element={<div>Requests list (placeholder)</div>} />
+          <Route path="requests/new" element={<RequestCreatePage />} />
+          {/* Profile */}
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

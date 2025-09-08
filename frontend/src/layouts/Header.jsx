@@ -37,7 +37,7 @@ export default function Header() {
           >
             <BellRing className="h-5 w-5 text-slate-600" />
             <span className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white">
-              2
+              
             </span>
           </Link>
         )}

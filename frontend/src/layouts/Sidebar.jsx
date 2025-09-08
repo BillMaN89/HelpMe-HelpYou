@@ -20,6 +20,7 @@ export default function Sidebar() {
             <NavLink
                 key={it.key}
                 to={it.to}
+                end={it.exact ?? true} //highlight only on exact match by default
                 className={({isActive}) =>
                 `block rounded-lg px-3 py-2 text-sm ${isActive ? "bg-indigo-50 text-indigo-700" : "text-slate-700 hover:bg-slate-50"}`
                 }

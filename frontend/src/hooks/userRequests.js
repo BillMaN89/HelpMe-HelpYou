@@ -1,0 +1,84 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { 
+    fetchMyRequests, 
+    fetchAllRequests, 
+    fetchAssignedToMe, 
+    createRequest, 
+    assignRequest 
+} from '../services/requestService';
+import { toast } from 'react-toastify';
+
+function getErrMsg(err) {
+  return err?.response?.data?.message || err?.message || 'Κάτι πήγε στραβά';
+}
+
+/** QUERIES **/
+
+export function useMyRequests(options = {}) {
+    return useQuery({
+        queryKey: ['requests', 'mine'],
+        queryFn: fetchMyRequests,
+        staleTime: 30 * 1000, // 30 seconds
+        onError: (err) => toast.error(getErrMsg(err)),
+        ...options,
+    });
+}
+
+export function useAllRequests({ enabled = true } = {}) {
+    return useQuery({
+        queryKey: ['requests', 'all'],
+        queryFn: fetchAllRequests,
+        staleTime: 30 * 1000,
+        enabled, // only run if user has permission
+        onError: (err) => toast.error(getErrMsg(err)),
+    });
+}
+
+export function useAssignedToMe({ enabled = true } = {}) {
+    return useQuery({
+        queryKey: ['requests', 'assignedToMe'],
+        queryFn: fetchAssignedToMe,
+        staleTime: 30 * 1000,
+        enabled, // only run if user has permission
+        onError: (err) => toast.error(getErrMsg(err)),
+    });
+}
+
+/** MUTATIONS **/
+
+export function useCreateRequest() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: createRequest, // ({service_type, description})
+    onSuccess: () => {
+        //list update
+      qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'all'] });
+      toast.success('Η αίτηση υποστήριξης δημιουργήθηκε επιτυχώς');
+    },
+    onError: (err) => {
+      toast.error(getErrMsg(err));
+    },
+  });
+}
+
+export function useAssignRequest() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, assigned_employee_email }) =>
+      assignRequest(id, { assigned_employee_email }),
+    onSuccess: () => {
+      // update all & assigned lists
+      qc.invalidateQueries({ queryKey: ['requests', 'all'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'assignedToMe'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
+
+      toast.success('Το αίτημα ανατέθηκε με επιτυχία');
+    },
+    onError: (err) => {
+      toast.error(getErrMsg(err));
+    },
+  });
+}

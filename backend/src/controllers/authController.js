@@ -255,7 +255,7 @@ export const registerUser = async (req, res) => {
 export function resolveRoleForUser(user_type, department, employee_type) {
   const ut = (user_type || '').toLowerCase().trim();
   const dept = (department || '').toLowerCase().trim();
-  const empType = (employee_type || '').toLowerCase().trim();
+  const et = (employee_type || '').toLowerCase().trim();
 
   if (ut === 'patient') return 'patient';
   if (ut === 'volunteer') return 'volunteer';
@@ -327,4 +327,3 @@ export async function upsertVolunteerHelpTypes(client, email, helpTypes) {
     [email, ...unique]
   );
 }
-
