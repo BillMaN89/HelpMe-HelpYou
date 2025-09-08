@@ -1,13 +1,99 @@
+import { useEffect, useMemo, useState } from "react";
+import http from "../shared/lib/http";
+import { API } from "../shared/constants/api";
+
 import UserInfoCard from "../components/profile/UserInfoCard";
 import AddressCard from "../components/profile/AddressCard";
 import ExtraInfoCard from "../components/profile/ExtraInfoCard";
 
+const EDITABLE_USERS   = ["first_name","last_name","dob","birth_place","phone_no","mobile","occupation"];
+const EDITABLE_ADDRESS = ["address","address_no","postal_code","city"];
+
 export default function ProfilePage() {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+
+  // ---- Fetch profile ----
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const { data } = await http.get(API.USERS.ME); // shaped object
+        const shaped = data?.user ?? data;
+        if (!mounted) return;
+        setProfile(shaped);
+      } catch (e) {
+        console.error("profile fetch error", e?.response?.status, e?.response?.data);
+        setErr(e?.response?.data?.message || "Αποτυχία φόρτωσης προφίλ");
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  // ---- Editable per section (role-aware extra) ----
+  const editable = useMemo(() => {
+    if (!profile?.user_type) return { users: [], address: [], extra: [] };
+    let extra = [];
+    if (profile.user_type === "patient") {
+      extra = ["disease_type", "handicap", "emergency_contact"];
+    } else if (profile.user_type === "volunteer") {
+      extra = ["occupation", "has_vehicle"];
+    } else if (profile.user_type === "employee") {
+      extra = ["has_vehicle"]; // department/employee_type -> admin-only από User Management
+    }
+    return { users: EDITABLE_USERS, address: EDITABLE_ADDRESS, extra };
+  }, [profile?.user_type]);
+
+  // ---- Submit handlers ----
+  async function updateUsers(fields) {
+    const payload = { target_email: profile.email, user_fields: fields };
+    const { data } = await http.patch(API.USERS.ME, payload);
+    setProfile(data?.user ?? data);
+    return data;
+  }
+
+  async function updateAddress(fields) {
+    // Προσοχή στο postal_code (backend ensureInteger): στείλ' το ως number αν γίνεται
+    if (fields.postal_code != null) {
+      const num = Number(String(fields.postal_code).trim());
+      if (!Number.isNaN(num)) fields.postal_code = num;
+    }
+    const payload = { target_email: profile.email, address_fields: fields };
+    const { data } = await http.patch(API.USERS.ME, payload);
+    setProfile(data?.user ?? data);
+    return data;
+  }
+
+  async function updateExtra(fields) {
+    const payload = { target_email: profile.email, details_fields: fields }; // backend patch per role table
+    const { data } = await http.patch(API.USERS.ME, payload);
+    setProfile(data?.user ?? data);
+    return data;
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-10 text-slate-500">
+        Φόρτωση προφίλ…
+      </div>
+    );
+  }
+  if (err) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-10 text-rose-600">
+        {err}
+      </div>
+    );
+  }
+
   return (
-    // όχι min-h-dvh, όχι δεύτερο header
     <section id="profile-main" role="main" className="py-6">
       <div className="mx-auto max-w-7xl px-4">
-        {/* Breadcrumb (προαιρετικό) */}
+        {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
           <ol className="flex items-center gap-2">
             <li><a href="/" className="hover:underline">Αρχική</a></li>
@@ -17,22 +103,40 @@ export default function ProfilePage() {
         </nav>
 
         <div className="mt-2 flex items-center justify-between">
-          <h1
-            id="profile-title"
-            className="text-2xl font-semibold tracking-tight relative inline-block"
-          >
+          <h1 className="text-2xl font-semibold tracking-tight relative inline-block">
             Το Προφίλ μου
           </h1>
-
-          {/* header actions slot */}
-          <div id="profile-header-actions" className="flex items-center gap-2" data-slot="header-actions" />
+          <div id="profile-header-actions" />
         </div>
 
         {/* Cards */}
         <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <UserInfoCard />
-          <AddressCard />
-          <ExtraInfoCard />
+          <UserInfoCard
+            data={{
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              email: profile.email,
+              dob: profile.dob,
+              phone_no: profile.phone_no,
+              mobile: profile.mobile,
+              occupation: profile.occupation,
+            }}
+            editable={editable.users}
+            onSubmit={updateUsers}
+          />
+
+          <AddressCard
+            data={profile.address ?? { address: "", address_no: "", postal_code: "", city: "" }}
+            editable={editable.address}
+            onSubmit={updateAddress}
+          />
+
+          <ExtraInfoCard
+            data={profile.details || {}}
+            userType={profile.user_type}
+            editable={editable.extra}
+            onSubmit={updateExtra}
+          />
         </div>
       </div>
     </section>

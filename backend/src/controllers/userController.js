@@ -11,6 +11,11 @@ const ADDRESS_UPDATABLE_FIELDS = new Set([
 ]);
 const ADDRESS_REQUIRED_ALL = ['address', 'address_no', 'postal_code', 'city'];
 
+const PATIENT_UPDATABLE   = new Set(['disease_type','handicap','emergency_contact']);
+const VOLUNTEER_UPDATABLE = new Set(['occupation','has_vehicle']);
+const EMPLOYEE_UPDATABLE  = new Set(['has_vehicle']);
+
+
 //View own profile
 export async function getUserProfile(req, res) {
   try {
@@ -50,50 +55,99 @@ export async function getUserByEmail(req, res) {
   }
 }
 
-//User update
+//User update (users + address + role-based details)
 export async function updateUser(req, res) {
   const actor = req.user; // action performer
   const {
-    target_email,       // REQUIRED
-    user_fields = {},   // OPTIONAL
-    address_fields = {} // OPTIONAL
+    target_email,        // REQUIRED
+    user_fields = {},    // OPTIONAL (users table)
+    address_fields = {}, // OPTIONAL (address_details table)
+    details_fields = {}, // OPTIONAL (patient/volunteer/employee details)
   } = req.body || {};
 
   try {
     if (!target_email) {
-      throw Object.assign(new Error('Χρειάζεται το email του χρήστη που θα πραγματοποιηθούν οι αλλαγές.'), { status: 400 });
+      throw Object.assign(
+        new Error('Χρειάζεται το email του χρήστη που θα πραγματοποιηθούν οι αλλαγές.'),
+        { status: 400 }
+      );
     }
 
-    // Authorisation: self or has 'update_user' , admin can change user_type
+    // Authorisation
     const isSelf = actor?.email === target_email;
     const canUpdateUsers = isSelf ? false : await userHasPermission(actor?.email, 'update_user');
     const canManageUsers = isSelf ? false : await userHasPermission(actor?.email, 'manage_users');
 
-
     if (!isSelf && !canUpdateUsers) {
-      throw Object.assign(new Error('Δεν μπορείτε να πραγματοποιήσετε αλλαγές σε άλλους χρήστες.'), { status: 403 });
+      throw Object.assign(
+        new Error('Δεν μπορείτε να πραγματοποιήσετε αλλαγές σε άλλους χρήστες.'),
+        { status: 403 }
+      );
     }
 
-    // No email change allowed here
     if ('email' in user_fields) {
-      throw Object.assign(new Error('Το email δεν μπορεί να αλλάξει από αυτό το σημείο.'), { status: 400 });
+      throw Object.assign(new Error('Το email δεν μπορεί να αλλάξει.'), { status: 400 });
     }
 
-    // Whitelist fields
+    // Whitelist core fields
     const allowedUserFields = pickAllowed(user_fields, USER_UPDATABLE_FIELDS);
     if (canManageUsers && 'user_type' in user_fields) {
       allowedUserFields.user_type = user_fields.user_type;
     }
-
     const allowedAddressFields = pickAllowed(address_fields, ADDRESS_UPDATABLE_FIELDS);
 
-    if (isEmpty(allowedUserFields) && isEmpty(allowedAddressFields)) {
-      throw Object.assign(new Error('Δεν δόθηκαν έγκυρα πεδία για ενημέρωση στοιχείων'), { status: 400 });
+    // Role-based details (whitelist per user_type)
+    let allowedDetailsFields = {};
+    let targetType = null;
+
+    if (!isEmpty(details_fields)) {
+      // find target user_type once
+      const { rows: rtype } = await pool.query(
+        `SELECT user_type FROM users WHERE email = $1`,
+        [target_email]
+      );
+      if (!rtype.length) {
+        throw Object.assign(new Error('Δεν βρέθηκε χρήστης με αυτό το email.'), { status: 404 });
+      }
+      targetType = rtype[0].user_type;
+
+      const pick = (obj, allowSet) => {
+        const out = {};
+        for (const [k, v] of Object.entries(obj)) {
+          if (allowSet.has(k)) out[k] = v;
+        }
+        return out;
+      };
+
+      if (targetType === 'patient') {
+        allowedDetailsFields = pick(details_fields, PATIENT_UPDATABLE);
+      } else if (targetType === 'volunteer') {
+        allowedDetailsFields = pick(details_fields, VOLUNTEER_UPDATABLE);
+      } else if (targetType === 'employee') {
+        allowedDetailsFields = pick(details_fields, EMPLOYEE_UPDATABLE);
+      }
+
+      // editing details of others still requires update_user (ή self)
+      if (!isSelf && !canUpdateUsers) {
+        throw Object.assign(new Error('Δεν μπορείτε να αλλάξετε τα επιπλέον στοιχεία.'), { status: 403 });
+      }
     }
 
-    // Light validation
+    // Validate light rules
     if ('dob' in allowedUserFields) ensureISODate(allowedUserFields.dob);
     if ('postal_code' in allowedAddressFields) ensureInteger(allowedAddressFields.postal_code, 'postal_code');
+
+    // If nothing to update, reject
+    if (
+      isEmpty(allowedUserFields) &&
+      isEmpty(allowedAddressFields) &&
+      isEmpty(allowedDetailsFields)
+    ) {
+      throw Object.assign(
+        new Error('Δεν δόθηκαν έγκυρα πεδία για ενημέρωση στοιχείων'),
+        { status: 400 }
+      );
+    }
 
     const client = await pool.connect();
     try {
@@ -106,34 +160,21 @@ export async function updateUser(req, res) {
           UPDATE users
           SET ${setSQL}
           WHERE email = $${params.length + 1}
-          RETURNING
-            email,
-            first_name,
-            last_name,
-            to_char(dob, 'YYYY-MM-DD') AS dob,
-            birth_place,
-            phone_no,
-            mobile,
-            occupation,
-            user_type
+          RETURNING email, first_name, last_name, to_char(dob,'YYYY-MM-DD') AS dob,
+                    birth_place, phone_no, mobile, occupation, user_type
         `;
         const r = await client.query(sql, [...params, target_email]);
         if (r.rows.length === 0) {
           throw Object.assign(new Error('Δεν βρέθηκε χρήστης με αυτό το email.'), { status: 404 });
         }
+        // ενημέρωσε το targetType αν άλλαξε user_type από admin
+        if (!targetType && allowedUserFields.user_type) {
+          targetType = allowedUserFields.user_type;
+        }
       } else {
-        // No user fields changed → still ensure user exists
+        // Ensure user exists anyway
         const r = await client.query(
-          `SELECT email,
-                  first_name,
-                  last_name,
-                  to_char(dob,'YYYY-MM-DD') AS dob,
-                  birth_place,
-                  phone_no,
-                  mobile,
-                  occupation,
-                  user_type
-             FROM users WHERE email = $1`,
+          `SELECT email FROM users WHERE email = $1`,
           [target_email]
         );
         if (r.rows.length === 0) {
@@ -141,46 +182,51 @@ export async function updateUser(req, res) {
         }
       }
 
-      // Update/insert address if needed
       if (!isEmpty(allowedAddressFields)) {
         await upsertAddressForEmail(client, target_email, allowedAddressFields);
       } else {
-        // fetch existing address
-        const addr = await client.query(
-          `SELECT address, address_no, postal_code, city
-             FROM address_details WHERE email = $1`,
+        await client.query(
+          `SELECT 1 FROM address_details WHERE email = $1`,
           [target_email]
         );
       }
 
+      // Update/insert role-based details if needed
+      if (!isEmpty(allowedDetailsFields)) {
+        if (!targetType) {
+          const { rows: rtype2 } = await pool.query(
+            `SELECT user_type FROM users WHERE email = $1`,
+            [target_email]
+          );
+          targetType = rtype2[0]?.user_type || null;
+        }
+
+        if (targetType === 'patient') {
+          await upsertDetails(client, 'patient_details', 'email', target_email, allowedDetailsFields);
+        } else if (targetType === 'volunteer') {
+          await upsertDetails(client, 'volunteer_details', 'email', target_email, allowedDetailsFields);
+          // NOTE: help_types παραμένουν εκτός του παρόντος endpoint
+        } else if (targetType === 'employee') {
+          await upsertDetails(client, 'employee_details', 'email', target_email, allowedDetailsFields);
+        }
+      }
+
       await client.query('COMMIT');
 
-      // Final truth from DB
-      const final = await pool.query(
-        `SELECT u.email, u.first_name, u.last_name, to_char(u.dob,'YYYY-MM-DD') AS dob,
-                u.birth_place, u.phone_no, u.mobile, u.occupation, u.user_type,
-                a.address, a.address_no, a.postal_code, a.city
-           FROM users u
-           LEFT JOIN address_details a USING (email)
-          WHERE u.email = $1`,
-        [target_email]
-      );
-
-      // audit log
-      console.info('User update:', {
-        actor_email: actor?.email,
-        actor_role: actor?.user_type,
-        target_email,
-        changed_user_fields: Object.keys(allowedUserFields),
-        changed_address_fields: Object.keys(allowedAddressFields)
+      // --- unified response (ίδιο shape με GET /users/me) ---
+      const fullProfile = await getUserFullProfile(target_email);
+      const shaped = await shapeProfileForViewer(fullProfile, {
+        viewerEmail: actor?.email,
+        targetEmail: target_email
       });
 
-      res.status(200).json({
+      return res.status(200).json({
         message: 'Το προφίλ ενημερώθηκε με επιτυχία.',
-        user: final.rows[0]
+        user: shaped
       });
+
     } catch (err) {
-      await pool.query('ROLLBACK');
+      await client.query('ROLLBACK');
       throw err;
     } finally {
       client.release();
@@ -189,9 +235,12 @@ export async function updateUser(req, res) {
   } catch (error) {
     const status = error.status || 500;
     console.error('updateUser error:', error);
-    res.status(status).json({ message: error.message || 'Σφάλμα κατά την ενημέρωση του χρήστη.' });
+    return res.status(status).json({
+      message: error.message || 'Σφάλμα κατά την ενημέρωση του χρήστη.'
+    });
   }
 }
+
 
 //User delete
 export async function deleteUserProfile(req, res) {
@@ -389,6 +438,29 @@ async function upsertAddressForEmail(client, email, addressFields) {
   const ins = await client.query(insertSQL, vals);
   return ins.rows[0];
 }
+
+async function upsertDetails(client, table, pkCol, pkVal, fields) {
+  const keys = Object.keys(fields);
+  if (!keys.length) return;
+
+  // UPDATE first
+  const { setSQL, params } = buildSetClause(fields, 1);
+  const upd = await client.query(
+    `UPDATE ${table} SET ${setSQL} WHERE ${pkCol} = $${params.length + 1}`,
+    [...params, pkVal]
+  );
+  if (upd.rowCount > 0) return;
+
+  // INSERT if no row to update
+  const cols = [pkCol, ...keys];
+  const vals = [pkVal, ...keys.map(k => fields[k])];
+  const placeholders = cols.map((_, i) => `$${i + 1}`).join(', ');
+  await client.query(
+    `INSERT INTO ${table} (${cols.join(',')}) VALUES (${placeholders})`,
+    vals
+  );
+}
+
 
 async function getUserFullProfile(email) {
   try {

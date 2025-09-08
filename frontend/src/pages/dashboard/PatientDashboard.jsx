@@ -8,7 +8,7 @@ export default function PatientDashboard() {
     <div className="space-y-6">
       <DashboardHeader
         // title: άστο να πάρει το default "Καλωσήρθες, {Όνομα} 👋"
-        subtitle="Γρήγορες ενέργειες για τα αιτήματά σου."
+        subtitle="Τι θα ήθελες να κάνεις σήμερα;"
       />
 
       <div className="grid gap-4 md:grid-cols-2">

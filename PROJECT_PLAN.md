@@ -5,9 +5,9 @@
 ---
 
 ## 🔹 Backend
-- [ ✅] CRUD Users (create/update/delete μόνο από admin)
-- [ ] Validation στα routes (email format, required fields, password length)
-- [ ] Cleanup: αφαίρεση `password_hash` από responses, format ημερομηνίας
+- [✅] CRUD Users (create/update/delete μόνο από admin)
+- [✅] Validation στα routes (email format, required fields, password length)
+- [✅] Cleanup: αφαίρεση `password_hash` από responses, format ημερομηνίας
 - [ ] HTTPS (self-signed SSL cert)
 - [ ] Security scans (`npm audit`, OWASP ZAP)
 - [ ] Τελικό testing flows (patient, volunteer, employee, admin)
@@ -15,17 +15,17 @@
 ---
 
 ## 🔹 Frontend (React)
-- [ ] Setup project με **Vite + React**
-- [ ] Ρύθμιση routing (`/login`, `/register`, `/dashboard`)
-- [ ] Axios instance + token storage (localStorage)
-- [ ] Φόρμα **Register** (σύνδεση με backend)
-- [ ] Φόρμα **Login** (JWT + redirect)
+- [✅] Setup project με **Vite + React**
+- [✅] Ρύθμιση routing (`/login`, `/register`, `/dashboard`)
+- [✅] Axios instance + token storage (localStorage)
+- [✅] Φόρμα **Register** (σύνδεση με backend)
+- [✅] Φόρμα **Login** (JWT + redirect)
 - [ ] Protected routes (αν δεν υπάρχει token → redirect login)
 - [ ] Dashboard view (προβολή αιτημάτων)
 - [ ] Support Request form (create request)
 - [ ] Προβολή αιτημάτων ανά ρόλο (patient, staff, admin)
-- [ ] Logout flow
-- [ ] Basic styling (Tailwind ή CSS modules)
+- [✅] Logout flow
+- [✅] Basic styling (Tailwind ή CSS modules)
 - [ ] UX βελτιώσεις (loading, error messages, date format)
 - [ ] Hosting (Vercel frontend, Render backend)
 

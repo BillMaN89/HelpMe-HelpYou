@@ -49,10 +49,10 @@
 
 ## 🔜 Επόμενα Βήματα
 
-- [ ] Υλοποίηση `logoutUser`
-- [ ] Υλοποίηση `getUserProfile`
-- [ ] Προβολή και διαχείριση χρηστών (Admin)
-- [ ] CRUD για roles/permissions (RBAC dashboard)
+- [✅] Υλοποίηση `logoutUser`
+- [✅] Υλοποίηση `getUserProfile`
+- [✅] Προβολή και διαχείριση χρηστών (Admin)
+- [✅] CRUD για roles/permissions (RBAC dashboard)
 - [ ] Frontend integration
 - [ ] Unit + integration testing
 

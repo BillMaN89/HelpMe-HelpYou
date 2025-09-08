@@ -8,7 +8,7 @@ export default function VolunteerDashboard() {
   return (
     <div className="space-y-6">
       <DashboardHeader
-        subtitle="Γρήγορη πρόσβαση στα δικά σου και στα ανατεθειμένα αιτήματα."
+        subtitle="Τι θα ήθελες να κάνεις σήμερα;"
       />
 
       <div className="grid gap-4 md:grid-cols-3">

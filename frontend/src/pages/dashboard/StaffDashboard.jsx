@@ -54,7 +54,7 @@ export default function StaffDashboardFancy() {
 
   return (
     <div className="space-y-6">
-      <DashboardHeader subtitle="Γρήγορη εικόνα & ενέργειες με βάση τα δικαιώματά σου." />
+      <DashboardHeader subtitle="Γρήγορη εικόνα & πίνακας ενεργειών." />
 
       <QuickActions />
 
