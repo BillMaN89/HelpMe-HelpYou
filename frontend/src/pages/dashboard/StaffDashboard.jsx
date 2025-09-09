@@ -8,6 +8,7 @@ import QuickActions from "../../components/dashboard/QuickActions";
 import RequestList from "../../components/dashboard/RequestList";
 import FancyMetricTile from "../../components/dashboard/FancyMetricTile";
 import { ClipboardList, ClipboardCheck, Clock } from "lucide-react";
+import { REQUEST_STATUS, REQUEST_STATUS_LABEL } from "../../shared/constants/requestStatus";
 
 export default function StaffDashboardFancy() {
   const { user, hasRole, can } = useAuth();
@@ -19,7 +20,7 @@ export default function StaffDashboardFancy() {
   useEffect(() => {
     async function boot() {
       try {
-        // Build promises in fixed order so results map reliably
+        // Build promises in fixed order
         const pMine = hasRole("patient") && can("view_own_requests")
           ? http.get(API.REQUESTS.MINE)
           : undefined;
@@ -56,8 +57,14 @@ export default function StaffDashboardFancy() {
   }, [hasRole, can]);
 
   const myCount = mine.length;
-  const assignedOpen = assigned.filter(r => !["completed","canceled"].includes(r?.status)).length;
-  const openAll = allReqs.filter(r => ["unassigned","assigned","in_progress"].includes(r?.status)).length;
+  const CLOSED_STATUSES = [REQUEST_STATUS.COMPLETED, REQUEST_STATUS.CANCELLED];
+  const assignedOpen = assigned.filter(r => !CLOSED_STATUSES.includes(r?.status)).length;
+  const OPEN_STATUSES = [
+    REQUEST_STATUS.UNASSIGNED,
+    REQUEST_STATUS.ASSIGNED,
+    REQUEST_STATUS.IN_PROGRESS,
+  ];
+  const openAll = allReqs.filter(r => OPEN_STATUSES.includes(r?.status)).length;
   const completedThisWeek = 0; // TODO: timestamp στο αίτημα
 
   return (
@@ -74,7 +81,7 @@ export default function StaffDashboardFancy() {
             value={openAll}
             Icon={ClipboardList}
             tone="primary"
-            subtext={loading ? "..." : "unassigned/assigned/in_progress"}
+            subtext={loading ? "..." : OPEN_STATUSES.map(s => REQUEST_STATUS_LABEL[s]).join("/")}
           />
         )}
 
@@ -113,7 +120,7 @@ export default function StaffDashboardFancy() {
         <RequestList
           title={hasRole("patient") ? "Τα τελευταία αιτήματά μου" : "Ανατεθειμένα σε μένα"}
           items={hasRole("patient") ? mine : assigned}
-          linkToAll={hasRole("patient") ? "/app/requests" : "/app/requests/assigned"}
+          linkToAll={hasRole("patient") ? "/app/requests" : "/app/assignedToMe"}
           loading={loading}
           emptyMessage={hasRole("patient") ? "Δεν έχεις αιτήματα." : "Δεν έχεις ανατεθειμένα."}
         />

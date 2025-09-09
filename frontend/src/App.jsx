@@ -12,8 +12,11 @@ import NotFoundPage from "./pages/NotFoundPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import RequestCreatePage from "./pages/requests/RequestCreatePage";
-import RequestForm from "./pages/requests/RequestForm";
 import MyRequestsPage from "./pages/requests/MyRequestsPage";
+import RequestsIndex from "./pages/requests/RequestsIndex";
+import AssignedToMePage from "./pages/requests/MyAssignedRequests";
+import UnassignedRequestsPage from "./pages/requests/UnassignedRequestsPage";
+import UsersPage from "./pages/users/UsersPage";
 
 import { RequireLogin } from "./components/auth/Guards";
 import { AuthProvider } from "./components/auth/AuthContext";
@@ -37,10 +40,15 @@ function AppRoutes() {
         <Route path="app" element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           {/* Requests */}
-          <Route path="requests" element={<MyRequestsPage />} />
+          <Route path="requests" element={<RequestsIndex />} />
+          <Route path="requests/assigned" element={<AssignedToMePage />} />
+          <Route path="requests/unassigned" element={<UnassignedRequestsPage />} />
+          <Route path="myRequests" element={<MyRequestsPage />} />
           <Route path="requests/new" element={<RequestCreatePage />} />
           {/* Profile */}
           <Route path="profile" element={<ProfilePage />} />
+          {/* Users */}
+          <Route path="users" element={<UsersPage />} />
         </Route>
       </Route>
 
@@ -72,4 +80,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-

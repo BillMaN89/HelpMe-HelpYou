@@ -7,7 +7,6 @@ export default function PatientDashboard() {
   return (
     <div className="space-y-6">
       <DashboardHeader
-        // title: άστο να πάρει το default "Καλωσήρθες, {Όνομα} 👋"
         subtitle="Τι θα ήθελες να κάνεις σήμερα;"
       />
 
@@ -18,7 +17,7 @@ export default function PatientDashboard() {
           desc="Δες την πορεία των αιτημάτων σου."
           Icon={FileText}
           tone="default"
-          // badge={2} // όταν βάλουμε summary counts
+          // badge={2} // όταν βάλω summary counts
         />
         <FancyTile
           to="/app/requests/new"

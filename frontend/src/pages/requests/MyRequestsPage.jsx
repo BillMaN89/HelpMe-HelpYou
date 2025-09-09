@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMyRequests } from "../../hooks/userRequests";
 import Button from '../../components/Button';
+import { getStatusLabel } from "../../shared/constants/requestStatus";
 
 
 function formatDate(iso) {
@@ -23,13 +24,19 @@ function formatService(type) {
 function StatusPill({ status }) {
   const base = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";
   const map = {
+    unassigned: "bg-slate-50 text-slate-700 border border-slate-200",
     open: "bg-blue-50 text-blue-700 border border-blue-200",
     assigned: "bg-indigo-50 text-indigo-700 border border-indigo-200",
     in_progress: "bg-amber-50 text-amber-700 border border-amber-200",
     completed: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     cancelled: "bg-rose-50 text-rose-700 border border-rose-200",
+    canceled: "bg-rose-50 text-rose-700 border border-rose-200",
   };
-  return <span className={`${base} ${map[status] ?? "bg-slate-100 text-slate-700 border"}`}>{status ?? "-"}</span>;
+  return (
+    <span className={`${base} ${map[status] ?? "bg-slate-100 text-slate-700 border"}`}>
+      {getStatusLabel(status)}
+    </span>
+  );
 }
 
 export default function MyRequestsPage() {
@@ -52,7 +59,7 @@ export default function MyRequestsPage() {
           <p className="text-slate-700">Δεν έχεις καταχωρήσει ακόμη αιτήματα.</p>
           <div className="mt-3">
             <Link to="/app/requests/new">
-              <Button>Καταχώρηση πρώτου αιτήματος</Button>
+              <Button>Δημιουργία αιτήματος</Button>
             </Link>
           </div>
         </div>
