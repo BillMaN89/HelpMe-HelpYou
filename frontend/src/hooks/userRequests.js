@@ -7,6 +7,7 @@ import {
     assignRequest 
 } from '../services/requestService';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 function getErrMsg(err) {
   return err?.response?.data?.message || err?.message || 'Κάτι πήγε στραβά';
@@ -48,6 +49,7 @@ export function useAssignedToMe({ enabled = true } = {}) {
 
 export function useCreateRequest() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: createRequest, // ({service_type, description})
@@ -55,7 +57,8 @@ export function useCreateRequest() {
         //list update
       qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
       qc.invalidateQueries({ queryKey: ['requests', 'all'] });
-      toast.success('Η αίτηση υποστήριξης δημιουργήθηκε επιτυχώς');
+      toast.success('Το αίτημα δημιουργήθηκε επιτυχώς');
+      navigate('/app/myRequests');
     },
     onError: (err) => {
       toast.error(getErrMsg(err));

@@ -1,5 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import "./index.css";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import RootLayout from "./layouts/RootLayout";   // Public layout
 import AppLayout from "./layouts/AppLayout";     // Private layout
@@ -77,6 +79,7 @@ export default function App() {
   return (
     <AuthProvider user={user} setUser={setUser}>
       <AppRoutes />
+      <ToastContainer position="top-right" autoClose={2500} newestOnTop theme="light" />
     </AuthProvider>
   );
 }

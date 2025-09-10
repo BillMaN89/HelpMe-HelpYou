@@ -24,8 +24,8 @@ export default function RequestForm() {
       <Formik
         initialValues={{ service_type: '', description: '' }}
         validationSchema={schema}
-        onSubmit={(values, { resetForm }) => {
-          createRequest(values, { onSuccess: () => resetForm() });
+        onSubmit={(values) => {
+          createRequest(values);
         }}
       >
         {({ isValid, dirty, resetForm }) => (
