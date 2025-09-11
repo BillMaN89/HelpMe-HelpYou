@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useMyRequests } from "../../hooks/userRequests";
 import Button from '../../components/Button';
 import { getStatusLabel } from "../../shared/constants/requestStatus";
+import { getServiceTypeLabel } from "../../shared/constants/serviceTypes";
 
 
 function formatDate(iso) {
@@ -15,11 +16,8 @@ function formatDate(iso) {
   } catch { return iso; }
 }
 
-function formatService(type) {
-  if (type === "social") return "Κοινωνική Υπηρεσία";
-  if (type === "psychological") return "Ψυχολογική Υποστήριξη";
-  return type ?? "-";
-}
+// centralized in constants
+const formatService = getServiceTypeLabel;
 
 function StatusPill({ status }) {
   const base = "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium";

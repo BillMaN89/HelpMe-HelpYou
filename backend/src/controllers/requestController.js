@@ -205,3 +205,53 @@ export async function getAssignedRequests(req, res) {
     });
   }
 }
+
+export async function updateSupportRequestStatus(req, res) {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const allowed = new Set(['assigned', 'in_progress', 'completed', 'cancelled', 'canceled']);
+  if (!status || !allowed.has(String(status).toLowerCase())) {
+    return res.status(400).json({ message: 'Μη έγκυρη κατάσταση αίτησης' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE support_requests
+         SET status = $1,
+             updated_at = CURRENT_TIMESTAMP
+       WHERE request_id = $2
+       RETURNING *`,
+      [status, id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Το αίτημα δεν βρέθηκε' });
+    }
+
+    return res.status(200).json({ message: 'Η κατάσταση ενημερώθηκε', request: rows[0] });
+  } catch (error) {
+    console.error('Σφάλμα κατά την ενημέρωση κατάστασης:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά την ενημέρωση κατάστασης' });
+  }
+}
+
+export async function deleteSupportRequest(req, res) {
+  const { id } = req.params;
+
+  try {
+    const { rows } = await pool.query(
+      `DELETE FROM support_requests
+        WHERE request_id = $1
+        RETURNING *`,
+      [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Το αίτημα δεν βρέθηκε' });
+    }
+    return res.status(200).json({ message: 'Το αίτημα διαγράφηκε' });
+  } catch (error) {
+    console.error('Σφάλμα κατά τη διαγραφή αιτήματος:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά τη διαγραφή αιτήματος' });
+  }
+}

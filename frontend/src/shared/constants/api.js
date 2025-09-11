@@ -14,5 +14,7 @@ export const API = {
     ALL: "/api/requests/all-requests",   // GET (για staff/admin)
     ASSIGN: (id) => `/api/requests/${id}/assign`, // PATCH
     ASSIGNED_TO_ME: "/api/requests/assigned-to-me", // GET
+    BY_ID: (id) => `/api/requests/${id}`, // GET | PATCH | DELETE
+    STATUS: (id) => `/api/requests/${id}/status`, // PATCH { status }
   },
 };

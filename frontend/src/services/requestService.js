@@ -38,3 +38,19 @@ export async function assignRequest(id, {assigned_employee_email}) {
     // data = { message, request }
     return data.request;
 }
+
+export async function updateRequestStatus(id, { status }) {
+    if (!id || !status) {
+        throw new Error("Λείπουν πεδία (id ή status)");
+    }
+    const { data } = await http.patch(API.REQUESTS.STATUS(id), { status });
+    // data = { message, request }
+    return data.request;
+}
+
+export async function deleteRequest(id) {
+    if (!id) throw new Error("Λείπει το id");
+    const { data } = await http.delete(API.REQUESTS.BY_ID(id));
+    // data = { message }
+    return data?.message ?? 'Το αίτημα διαγράφηκε';
+}

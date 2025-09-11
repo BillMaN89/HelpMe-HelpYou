@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyToken } from '../middlewares/verifyToken.js';
-import { createSupportRequest, getSupportRequests, getAllSupportRequests, assignSupportRequest, getAssignedRequests } from '../controllers/requestController.js';
+import { createSupportRequest, getSupportRequests, getAllSupportRequests, assignSupportRequest, getAssignedRequests, updateSupportRequestStatus, deleteSupportRequest } from '../controllers/requestController.js';
 import { requirePermission } from '../middlewares/requirePermission.js';
 
 const router = express.Router();
@@ -31,6 +31,16 @@ router.patch('/:id/assign',
 router.get('/assigned-to-me',
   requirePermission(['view_assigned_requests']),
   getAssignedRequests);
+
+// Ενημέρωση κατάστασης αιτήματος
+router.patch('/:id/status',
+  requirePermission(['edit_req_status']),
+  updateSupportRequestStatus);
+
+// Διαγραφή αιτήματος
+router.delete('/:id',
+  requirePermission(['assign_requests']),
+  deleteSupportRequest);
 
 
 export default router;

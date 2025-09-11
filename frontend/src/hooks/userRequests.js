@@ -4,10 +4,13 @@ import {
     fetchAllRequests, 
     fetchAssignedToMe, 
     createRequest, 
-    assignRequest 
+    assignRequest, 
+    updateRequestStatus,
+    deleteRequest,
 } from '../services/requestService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { getStatusLabel } from '../shared/constants/requestStatus';
 
 function getErrMsg(err) {
   return err?.response?.data?.message || err?.message || 'Κάτι πήγε στραβά';
@@ -79,6 +82,40 @@ export function useAssignRequest() {
       qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
 
       toast.success('Το αίτημα ανατέθηκε με επιτυχία');
+    },
+    onError: (err) => {
+      toast.error(getErrMsg(err));
+    },
+  });
+}
+
+export function useUpdateRequestStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }) => updateRequestStatus(id, { status }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ['requests', 'assignedToMe'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'all'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
+      const label = getStatusLabel(variables?.status);
+      toast.success(`Η κατάσταση ενημερώθηκε: ${label}`);
+    },
+    onError: (err) => {
+      toast.error(getErrMsg(err));
+      console.log(err)
+    },
+  });
+}
+
+export function useDeleteRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }) => deleteRequest(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['requests', 'assignedToMe'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'all'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
+      toast.success('Το αίτημα διαγράφηκε');
     },
     onError: (err) => {
       toast.error(getErrMsg(err));
