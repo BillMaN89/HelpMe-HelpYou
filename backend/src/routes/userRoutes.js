@@ -11,7 +11,7 @@ router.get( '/me', getUserProfile);
 //Ενημέρωση προφιλ χρήστη
 router.patch('/me', updateUser);
 
-//Προβολή όλων των χρηστών
+//Προβολή χρήστη με email
 router.get ('/:email', getUserByEmail);
 
 //Διαγραφή χρήστη

@@ -17,7 +17,7 @@ export const NAV_ITEMS = [
     requireAnyPerm: ['create_request'], showFor: ['patient', 'volunteer', 'admin'] },
 
   { key: 'users', label: 'Χρήστες', to: '/app/users', exact: true,
-    requireAnyPerm: ['manage_users','view_patient_info'], showFor: ['admin','secretary','therapist','social_worker'] },
+    requireAnyPerm: ['manage_users','update_user','view_patient_info', 'view_user'], showFor: ['admin','secretary','therapist','social_worker', 'viewer'] },
 
   { key: 'profile', label: 'Το προφίλ μου', exact: true, to: '/app/profile', all: true },
 ];
@@ -25,4 +25,3 @@ export const NAV_ITEMS = [
 export const NAV_FOOTER_ITEMS = [
   { key: 'logout', label: 'Αποσύνδεση', to: '/logout', all: true, icon: 'Logout' },
 ];
-

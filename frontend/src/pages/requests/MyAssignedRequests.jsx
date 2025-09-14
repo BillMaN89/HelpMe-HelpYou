@@ -43,10 +43,10 @@ export default function AssignedToMePage() {
   const { can } = useAuth();
   const requests = data ?? [];
   const canEditStatus = can('edit_req_status');
-  const canDelete = can('assign_requests');
+  const canDelete = can('update_request');
 
   function handleDelete(r) {
-    if (!window.confirm(`Διαγραφή αιτήματος #${r.request_id}; Είστε σίγουρος;`)) return;
+    if (!window.confirm(`Διαγραφή αιτήματος #${r.request_id}; Είστε σίγουροι;`)) return;
     removeReq.mutate({ id: r.request_id });
   }
 

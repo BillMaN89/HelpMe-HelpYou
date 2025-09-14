@@ -33,7 +33,7 @@ export default function QuickActions() {
               </Link>
             )}
             {can("assign_requests") && (
-              <Link to="/app/requests/assign" className="rounded-xl border bg-white px-4 py-3 shadow-sm hover:shadow">
+              <Link to="/app/requests/unassigned" className="rounded-xl border bg-white px-4 py-3 shadow-sm hover:shadow">
                 Ανάθεση Αιτημάτων
               </Link>
             )}
@@ -45,9 +45,9 @@ export default function QuickActions() {
           </>
         )}
 
-        {/* Admin */}
-        {can("manage_users") && (
-          <Link to="/app/admin/users" className="rounded-xl border bg-white px-4 py-3 shadow-sm hover:shadow">
+        {/* Admin/Employees with user-related permissions */}
+        {(can("manage_users") || can('update_user') || can('view_patient_info')) && (
+          <Link to="/app/users" className="rounded-xl border bg-white px-4 py-3 shadow-sm hover:shadow">
             Διαχείριση Χρηστών
           </Link>
         )}
