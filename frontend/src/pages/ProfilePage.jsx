@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import http from "../shared/lib/http";
 import { API } from "../shared/constants/api";
+import { useAuth } from "../components/auth/AuthContext";
+import { toast } from 'react-toastify';
 
 import UserInfoCard from "../components/profile/UserInfoCard";
 import AddressCard from "../components/profile/AddressCard";
@@ -10,6 +12,7 @@ const EDITABLE_USERS   = ["first_name","last_name","dob","birth_place","phone_no
 const EDITABLE_ADDRESS = ["address","address_no","postal_code","city"];
 
 export default function ProfilePage() {
+  const auth = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
@@ -43,16 +46,21 @@ export default function ProfilePage() {
     } else if (profile.user_type === "volunteer") {
       extra = ["occupation", "has_vehicle"];
     } else if (profile.user_type === "employee") {
-      extra = ["has_vehicle"]; // department/employee_type -> admin-only από User Management
+      // Base employee fields editable by user; department/type admin-only, allow if user has manage_users
+      extra = ["has_vehicle"];
+      if (auth.can('manage_users')) {
+        extra = ["department", "employee_type", ...extra];
+      }
     }
     return { users: EDITABLE_USERS, address: EDITABLE_ADDRESS, extra };
-  }, [profile?.user_type]);
+  }, [profile?.user_type, auth]);
 
   // ---- Submit handlers ----
   async function updateUsers(fields) {
     const payload = { target_email: profile.email, user_fields: fields };
     const { data } = await http.patch(API.USERS.ME, payload);
     setProfile(data?.user ?? data);
+    toast.success('Τα βασικά στοιχεία αποθηκεύτηκαν');
     return data;
   }
 
@@ -65,6 +73,7 @@ export default function ProfilePage() {
     const payload = { target_email: profile.email, address_fields: fields };
     const { data } = await http.patch(API.USERS.ME, payload);
     setProfile(data?.user ?? data);
+    toast.success('Τα στοιχεία επικοινωνίας αποθηκεύτηκαν');
     return data;
   }
 
@@ -72,6 +81,7 @@ export default function ProfilePage() {
     const payload = { target_email: profile.email, details_fields: fields }; // backend patch per role table
     const { data } = await http.patch(API.USERS.ME, payload);
     setProfile(data?.user ?? data);
+    toast.success('Οι επιπλέον πληροφορίες αποθηκεύτηκαν');
     return data;
   }
 

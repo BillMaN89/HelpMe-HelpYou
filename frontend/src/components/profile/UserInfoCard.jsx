@@ -68,7 +68,7 @@ export default function UserInfoCard({ data, editable = [], onSubmit }) {
       style={{ backgroundColor: "var(--card-bg)", borderColor: "var(--border)" }}
     >
       <div className="h-1 -mt-5 -mx-5 mb-4 rounded-t-2xl" style={{ background: "var(--brand-600)" }} />
-      <div className="mb-3 flex items-start justify-between px-0.5">
+      <div className="mb-3 flex items-start justify-between px-3">
         <div>
           <h2 id="profile-users-title" className="text-lg font-semibold tracking-tight">Βασικά στοιχεία</h2>
           <p className="text-sm" style={{ color: "var(--text-muted)" }}>Προσωπικά στοιχεία χρήστη</p>
@@ -101,7 +101,7 @@ export default function UserInfoCard({ data, editable = [], onSubmit }) {
       </div>
 
       {!edit ? (
-        <div className="divide-y">
+        <div className="divide-y px-3 pb-2">
           <FieldRow label="Όνομα"          value={dash(data.first_name)} />
           <FieldRow label="Επώνυμο"        value={dash(data.last_name)} />
           <FieldRow label="Email"          value={dash(data.email)} />
@@ -111,7 +111,7 @@ export default function UserInfoCard({ data, editable = [], onSubmit }) {
           <FieldRow label="Επάγγελμα"      value={dash(data.occupation)} />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 pt-1">
+        <div className="grid grid-cols-1 gap-3 pt-1 px-3 pb-3">
           <InputRow name="first_name" label="Όνομα" value={form.first_name} onChange={onChange} error={errors.first_name} />
           <InputRow name="last_name"  label="Επώνυμο" value={form.last_name} onChange={onChange} error={errors.last_name} />
           <ReadOnlyRow label="Email" value={data.email} />

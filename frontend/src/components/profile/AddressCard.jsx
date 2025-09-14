@@ -98,7 +98,7 @@ export default function AddressCard({ data, editable = [], onSubmit }) {
     >
       <div className="h-1 -mt-5 -mx-5 mb-4 rounded-t-2xl" style={{ background: "var(--brand-600)" }} />
 
-      <div className="mb-3 flex items-start justify-between px-0.5">
+      <div className="mb-3 flex items-start justify-between px-3">
         <div>
           <h2 id="profile-address-title" className="text-lg font-semibold tracking-tight">
             Διεύθυνση
@@ -148,14 +148,14 @@ export default function AddressCard({ data, editable = [], onSubmit }) {
 
       {/* Περιεχόμενο */}
       {!edit ? (
-        <div className="divide-y">
+        <div className="divide-y px-3 pb-2">
           <FieldRow label="Οδός"     value={showOrDash(data?.address)} />
           <FieldRow label="Αριθμός"  value={showOrDash(data?.address_no)} />
           <FieldRow label="Τ.Κ."     value={showOrDash(data?.postal_code)} />
           <FieldRow label="Πόλη"     value={showOrDash(data?.city)} />
         </div>
       ) : (
-        <div className="space-y-3 pt-1">
+        <div className="space-y-3 pt-1 px-3 pb-3">
           <InputRow
             name="address"
             label="Οδός"

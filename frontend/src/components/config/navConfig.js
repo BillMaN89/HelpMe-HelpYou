@@ -19,6 +19,9 @@ export const NAV_ITEMS = [
   { key: 'users', label: 'Χρήστες', to: '/app/users', exact: true,
     requireAnyPerm: ['manage_users','update_user','view_patient_info', 'view_user'], showFor: ['admin','secretary','therapist','social_worker', 'viewer'] },
 
+  { key: 'userCreate', label: 'Δημιουργία χρήστη', to: '/app/users/new', exact: true,
+    requireAllPerm: ['manage_users'], showFor: ['admin'] },
+
   { key: 'profile', label: 'Το προφίλ μου', exact: true, to: '/app/profile', all: true },
 ];
 

@@ -266,8 +266,8 @@ export default function RegisterPage() {
                       <option value="">-- Επιλέξτε --</option>
                       <option value="social_services">Κοινωνική Υπηρεσία</option>
                       <option value="psychological_services">Ψυχολογική Υπηρεσία</option>
-                      <option value="administration">Administration</option>
-                      <option value="management">Management</option>
+                      <option value="management">Γραμματεία</option>
+                      <option value="administration">Διοίκηση</option>
                       <option value="board_of_directors">Δ.Σ.</option>
                     </Field>
                     <ErrorMessage name="department" component="div" className="mt-1 text-sm text-red-600" />
@@ -295,17 +295,19 @@ export default function RegisterPage() {
 
               {/* Actions */}
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <Button type="submit" size="lg" disabled={isSubmitting || loading} className="w-full">
+                <div className="flex items-center justify-center gap-3">
+                  <Button type="submit" size="md" disabled={isSubmitting || loading} className="min-w-[160px]">
                     {loading ? 'Αποστολή…' : 'Εγγραφή'}
                   </Button>
-                  <Button type="button" variant="secondary" size="lg" className="w-full" onClick={() => { setServerError(''); resetForm(); }}>
+                  <Button type="button" variant="secondary" size="md" className="min-w-[160px]" onClick={() => { setServerError(''); resetForm(); }}>
                     Καθαρισμός φόρμας
                   </Button>
                 </div>
-                <Link to="/" className="block">
-                  <Button variant="outline" className="w-full">Αρχική Σελίδα</Button>
-                </Link>
+                <div className="flex items-center justify-center">
+                  <Link to="/">
+                    <Button variant="outline" size="sm" className="min-w-[160px]">Αρχική Σελίδα</Button>
+                  </Link>
+                </div>
               </div>
             </Form>
           )}

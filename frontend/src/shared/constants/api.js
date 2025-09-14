@@ -7,6 +7,9 @@ export const API = {
     ME: "/api/users/me", // GET profile, PATCH update
     BY_EMAIL: (email) => `/api/users/${encodeURIComponent(email)}`,
     DELETE:   (email) => `/api/users/${encodeURIComponent(email)}`,
+    LIST: "/api/users",
+    ROLES_ALL: "/api/users/roles", // GET
+    ROLES_SET: (email) => `/api/users/${encodeURIComponent(email)}/roles`, // PATCH { roles: [] }
   },
   REQUESTS: {
     CREATE: "/api/requests",             // POST

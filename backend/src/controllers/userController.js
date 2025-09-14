@@ -1,6 +1,49 @@
 import { pool } from '../db/pool.js';
 import { isEmpty, ensureInteger } from '../utils/helpers.js';
 
+// List users (permission-aware)
+// Allowed if requester has any of: manage_users, view_user, view_patient_info
+export async function listUsers(req, res) {
+  try {
+    const requester = req.user?.email;
+    if (!requester) return res.status(401).json({ message: 'Μη εξουσιοδοτημένο αίτημα' });
+
+    // permission check
+    const canManage = await userHasPermission(requester, 'manage_users');
+    const canView = await userHasPermission(requester, 'view_user');
+    const canViewPatientInfo = await userHasPermission(requester, 'view_patient_info');
+
+    if (!canManage && !canView && !canViewPatientInfo) {
+      return res.status(403).json({ message: 'Δεν έχετε δικαίωμα προβολής χρηστών' });
+    }
+
+    // basic listing with roles aggregated
+    const { rows } = await pool.query(
+      `SELECT u.email,
+              u.first_name,
+              u.last_name,
+              to_char(u.dob,'YYYY-MM-DD') AS dob,
+              u.user_type,
+              COALESCE(
+                ARRAY(
+                  SELECT ur2.role_name
+                  FROM user_roles ur2
+                  WHERE ur2.email = u.email
+                  ORDER BY ur2.role_name
+                ),
+                ARRAY[]::text[]
+              ) AS roles
+         FROM users u
+        ORDER BY u.last_name, u.first_name`
+    );
+
+    return res.status(200).json({ users: rows });
+  } catch (error) {
+    console.error('Σφάλμα στο listUsers:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά την προβολή χρηστών' });
+  }
+}
+
 // Whitelisted fields for update
 const USER_UPDATABLE_FIELDS = new Set([
   'first_name', 'last_name', 'dob', 'birth_place',
@@ -13,7 +56,9 @@ const ADDRESS_REQUIRED_ALL = ['address', 'address_no', 'postal_code', 'city'];
 
 const PATIENT_UPDATABLE   = new Set(['disease_type','handicap','emergency_contact']);
 const VOLUNTEER_UPDATABLE = new Set(['occupation','has_vehicle']);
-const EMPLOYEE_UPDATABLE  = new Set(['has_vehicle']);
+// split for employee: common vs admin-only
+const EMPLOYEE_UPDATABLE_COMMON = new Set(['has_vehicle']);
+const EMPLOYEE_UPDATABLE_ADMIN  = new Set(['department','employee_type']);
 
 
 //View own profile
@@ -41,8 +86,15 @@ export async function getUserByEmail(req, res) {
       return res.status(200).json(shaped);
     }
 
-    const isViewerAdmin = await userHasPermission(viewerEmail, 'manage_roles');
-    if (!isViewerAdmin) {
+    // Permissions per requirements:
+    // - admin (manage_users) can view others
+    // - secretary (view_user) can view others
+    // - therapist/social_worker (view_patient_info) can view others (esp. patients)
+    const canManageUsers = await userHasPermission(viewerEmail, 'manage_users');
+    const canViewUsers = await userHasPermission(viewerEmail, 'view_user');
+    const canViewPatientInfo = await userHasPermission(viewerEmail, 'view_patient_info');
+
+    if (!canManageUsers && !canViewUsers && !canViewPatientInfo) {
       return res.status(403).json({ message: 'Δεν έχετε πρόσβαση σε προφίλ άλλων χρηστών' });
     }
 
@@ -124,7 +176,10 @@ export async function updateUser(req, res) {
       } else if (targetType === 'volunteer') {
         allowedDetailsFields = pick(details_fields, VOLUNTEER_UPDATABLE);
       } else if (targetType === 'employee') {
-        allowedDetailsFields = pick(details_fields, EMPLOYEE_UPDATABLE);
+        // has_vehicle is editable by update_user; department/employee_type only by manage_users
+        const common = pick(details_fields, EMPLOYEE_UPDATABLE_COMMON);
+        const adminOnly = canManageUsers ? pick(details_fields, EMPLOYEE_UPDATABLE_ADMIN) : {};
+        allowedDetailsFields = { ...common, ...adminOnly };
       }
 
       // editing details of others still requires update_user (ή self)
@@ -356,6 +411,91 @@ export async function deleteUserProfile(req, res) {
   }
 }
 
+// List all roles (admin only)
+export async function listRoles(req, res) {
+  try {
+    const requester = req.user?.email;
+    const canManage = await userHasPermission(requester, 'manage_users');
+    if (!canManage) return res.status(403).json({ message: 'Απαγορεύεται' });
+    const { rows } = await pool.query(`SELECT role_name FROM roles ORDER BY role_name`);
+    return res.status(200).json({ roles: rows.map(r => r.role_name) });
+  } catch (error) {
+    console.error('Σφάλμα στο listRoles:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση ρόλων' });
+  }
+}
+
+// Set roles for a user (admin only)
+export async function setUserRoles(req, res) {
+  const requester = req.user?.email;
+  const targetEmail = req.params.email;
+  const roles = Array.isArray(req.body?.roles) ? req.body.roles.map(String) : null;
+  try {
+    const canManage = await userHasPermission(requester, 'manage_users');
+    if (!canManage) return res.status(403).json({ message: 'Απαγορεύεται' });
+    if (!roles) return res.status(400).json({ message: 'Λείπει η λίστα ρόλων' });
+
+    // Validate target exists
+    const { rows: u } = await pool.query(`SELECT email FROM users WHERE email = $1`, [targetEmail]);
+    if (!u.length) return res.status(404).json({ message: 'Ο χρήστης δεν βρέθηκε' });
+
+    // Validate roles exist
+    const { rows: allRoles } = await pool.query(`SELECT role_name FROM roles`);
+    const roleSet = new Set(allRoles.map(r => r.role_name));
+    for (const r of roles) {
+      if (!roleSet.has(r)) return res.status(400).json({ message: `Μη έγκυρος ρόλος: ${r}` });
+    }
+
+    // Current roles
+    const { rows: curRows } = await pool.query(
+      `SELECT role_name FROM user_roles WHERE email = $1`,
+      [targetEmail]
+    );
+    const current = new Set(curRows.map(r => r.role_name));
+    const desired = new Set(roles);
+    const toAdd = roles.filter(r => !current.has(r));
+    const toRemove = [...current].filter(r => !desired.has(r));
+
+    // Last admin protection if removing 'admin'
+    if (toRemove.includes('admin')) {
+      const { rows: adminCountRows } = await pool.query(
+        `SELECT COUNT(*)::int AS cnt FROM user_roles WHERE role_name = 'admin'`
+      );
+      if (adminCountRows[0].cnt === 1) {
+        return res.status(409).json({ message: 'Δεν μπορείτε να αφαιρέσετε τον τελευταίο διαχειριστή' });
+      }
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      if (toRemove.length) {
+        await client.query(
+          `DELETE FROM user_roles WHERE email = $1 AND role_name = ANY($2::text[])`,
+          [targetEmail, toRemove]
+        );
+      }
+      for (const r of toAdd) {
+        await client.query(
+          `INSERT INTO user_roles (email, role_name) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [targetEmail, r]
+        );
+      }
+      await client.query('COMMIT');
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+
+    return res.status(200).json({ message: 'Οι ρόλοι ενημερώθηκαν', roles: roles });
+  } catch (error) {
+    console.error('Σφάλμα στο setUserRoles:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά την ενημέρωση ρόλων' });
+  }
+}
+
 //Helper functions
 async function userHasPermission(email, permission) {
   try {
@@ -578,6 +718,7 @@ async function getUserFullProfile(email) {
 async function shapeProfileForViewer(profile, { viewerEmail, targetEmail }) {
   const isAdmin = await userHasPermission(viewerEmail, 'manage_roles');
   const isSelf = viewerEmail === targetEmail;
+  const canViewPatientInfo = await userHasPermission(viewerEmail, 'view_patient_info');
 
   const shaped = {
     email: profile.email,
@@ -622,6 +763,17 @@ async function shapeProfileForViewer(profile, { viewerEmail, targetEmail }) {
     } else {
       shaped.details = {};
     }
+    return shaped;
+  }
+
+  // Viewing others, non-admin:
+  // Allow exposing patient details if viewer has view_patient_info
+  if (profile.user_type === 'patient' && canViewPatientInfo) {
+    shaped.details = {
+      disease_type: profile.details?.disease_type ?? null,
+      handicap: profile.details?.handicap ?? null,
+      emergency_contact: profile.details?.emergency_contact ?? null,
+    };
   }
 
   return shaped;

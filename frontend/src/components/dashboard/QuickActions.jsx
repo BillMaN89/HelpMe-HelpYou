@@ -51,11 +51,12 @@ export default function QuickActions() {
             Διαχείριση Χρηστών
           </Link>
         )}
-        {can("manage_roles") && (
+        {/*TODO: separate role management page */}
+        {/* {can("manage_roles") && (
           <Link to="/app/admin/roles" className="rounded-xl border bg-white px-4 py-3 shadow-sm hover:shadow">
             Διαχείριση Ρόλων
           </Link>
-        )}
+        )} */}
       </div>
     </section>
   );

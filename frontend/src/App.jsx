@@ -19,6 +19,8 @@ import RequestsIndex from "./pages/requests/RequestsIndex";
 import AssignedToMePage from "./pages/requests/MyAssignedRequests";
 import UnassignedRequestsPage from "./pages/requests/UnassignedRequestsPage";
 import UsersPage from "./pages/users/UsersPage";
+import UserCreatePage from "./pages/users/UserCreatePage";
+import UserProfileView from "./pages/users/UserProfileView";
 
 import { RequireLogin } from "./components/auth/Guards";
 import { AuthProvider } from "./components/auth/AuthContext";
@@ -51,6 +53,8 @@ function AppRoutes() {
           <Route path="profile" element={<ProfilePage />} />
           {/* Users */}
           <Route path="users" element={<UsersPage />} />
+          <Route path="users/new" element={<UserCreatePage />} />
+          <Route path="users/:email" element={<UserProfileView />} />
         </Route>
       </Route>
 
