@@ -30,10 +30,13 @@ export default function RootLayout({ }) {
        <Outlet />
       </main>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-4 text-sm text-slate-500">
-          © {new Date().getFullYear()} BillMaN.
+      {/* Unified footer */}
+      <footer role="contentinfo" className="mt-10 border-t">
+        <div className="mx-auto max-w-7xl px-4 py-6 text-sm text-slate-500">
+          <div className="flex items-center justify-between">
+            <p>© {new Date().getFullYear()} BillMaN</p>
+            <p>Thesis Project • v 0.2.0</p>
+          </div>
         </div>
       </footer>
     </div>

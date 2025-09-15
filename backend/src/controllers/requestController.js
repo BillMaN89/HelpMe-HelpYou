@@ -255,3 +255,21 @@ export async function deleteSupportRequest(req, res) {
     return res.status(500).json({ message: 'Σφάλμα κατά τη διαγραφή αιτήματος' });
   }
 }
+
+// Get single request by id (for staff/admin with view_requests)
+export async function getSupportRequestById(req, res) {
+  const { id } = req.params;
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM support_requests WHERE request_id = $1`,
+      [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ message: 'Το αίτημα δεν βρέθηκε' });
+    }
+    return res.status(200).json({ request: rows[0] });
+  } catch (error) {
+    console.error('Σφάλμα κατά την ανάκτηση αιτήματος:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση αιτήματος' });
+  }
+}

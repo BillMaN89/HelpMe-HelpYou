@@ -1,10 +1,15 @@
 import { Link } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/HeaderDashboard";
 import FancyTile from "../../components/dashboard/FancyTile";
+import RequestList from "../../components/dashboard/RequestList";
 import { FileText, PlusCircle, ClipboardList } from "lucide-react";
+import { useAssignedToMe } from "../../hooks/userRequests";
+import { useAuth } from "../../components/auth/AuthContext";
 
 
 export default function VolunteerDashboard() {
+  const { can } = useAuth();
+  const { data: assigned = [], isLoading } = useAssignedToMe({ enabled: can('view_assigned_requests') });
   return (
     <div className="space-y-6">
       <DashboardHeader
@@ -29,13 +34,23 @@ export default function VolunteerDashboard() {
         />
         <FancyTile
           to="/app/requests/assigned"
-          title="Ανατεθειμένα σε μένα"
+          title="Ανατεθειμένα σε εμένα"
           desc="Όσα πρέπει να εξυπηρετήσεις."
           Icon={ClipboardList}
           tone="caution"
           // badge={1}
         />
       </div>
+
+      <section>
+        <RequestList
+          title="Ανατεθειμένα σε εμένα"
+          items={assigned}
+          linkToAll="/app/requests/assigned"
+          loading={isLoading}
+          emptyMessage="Δεν έχεις ανατεθειμένα."
+        />
+      </section>
     </div>
   );
 }

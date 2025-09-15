@@ -10,7 +10,7 @@ export const NAV_ITEMS = [
   { key: 'myRequests', label: 'Τα αιτήματά μου', exact: true, to: '/app/myRequests',
     requireAnyPerm: ['view_own_requests'], showFor: ['patient', 'volunteer'] },
 
-  { key: 'assignedToMe', label: 'Ανατεθειμένα σε μένα', exact: true, to: '/app/requests/assigned',
+  { key: 'assignedToMe', label: 'Ανατεθειμένα σε εμένα', exact: true, to: '/app/requests/assigned',
     requireAnyPerm: ['view_assigned_requests'], showFor: ['volunteer','therapist','social_worker', 'admin'] },
 
   { key: 'newRequest', label: 'Νέο αίτημα', exact: true, to: '/app/requests/new',

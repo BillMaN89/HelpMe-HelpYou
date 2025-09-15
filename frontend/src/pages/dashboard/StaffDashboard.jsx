@@ -87,7 +87,7 @@ export default function StaffDashboardFancy() {
 
         {can("view_assigned_requests") && (
           <FancyMetricTile
-            title="Ανατεθειμένα σε μένα"
+            title="Ανατεθειμένα σε εμένα"
             value={assignedOpen}
             Icon={Clock}
             tone="caution"
@@ -118,9 +118,9 @@ export default function StaffDashboardFancy() {
       {/* Lists */}
       <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <RequestList
-          title={hasRole("patient") ? "Τα τελευταία αιτήματά μου" : "Ανατεθειμένα σε μένα"}
+          title={hasRole("patient") ? "Τα τελευταία αιτήματά μου" : "Ανατεθειμένα σε εμένα"}
           items={hasRole("patient") ? mine : assigned}
-          linkToAll={hasRole("patient") ? "/app/requests" : "/app/assignedToMe"}
+          linkToAll={hasRole("patient") ? "/app/requests" : "/app/requests/assigned"}
           loading={loading}
           emptyMessage={hasRole("patient") ? "Δεν έχεις αιτήματα." : "Δεν έχεις ανατεθειμένα."}
         />

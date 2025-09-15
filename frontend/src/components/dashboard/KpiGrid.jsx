@@ -10,7 +10,7 @@ export default function KpiGrid({ loading, openAll, assignedOpen, completedThisW
           <div className="mt-2 text-3xl font-semibold text-slate-900">{val(openAll)}</div>
         </div>
         <div className="rounded-2xl border bg-white p-4 shadow-sm">
-          <div className="text-sm text-slate-500">Ανατεθειμένα σε μένα</div>
+          <div className="text-sm text-slate-500">Ανατεθειμένα σε εμένα</div>
           <div className="mt-2 text-3xl font-semibold text-slate-900">{val(assignedOpen)}</div>
         </div>
         <div className="rounded-2xl border bg-white p-4 shadow-sm">

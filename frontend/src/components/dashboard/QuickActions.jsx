@@ -29,7 +29,7 @@ export default function QuickActions() {
           <>
             {can("view_assigned_requests") && (
               <Link to="/app/requests/assigned" className="rounded-xl border bg-white px-4 py-3 shadow-sm hover:shadow">
-                Ανατεθειμένα σε μένα
+                Ανατεθειμένα σε εμένα
               </Link>
             )}
             {can("assign_requests") && (

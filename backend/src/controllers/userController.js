@@ -743,6 +743,10 @@ async function shapeProfileForViewer(profile, { viewerEmail, targetEmail }) {
   }
 
   if (isSelf) {
+    // Expose own roles and permissions so the frontend can render nav/guards
+    shaped.roles = profile.roles ?? [];
+    shaped.permissions = profile.permissions ?? [];
+
     if (profile.user_type === 'patient') {
       shaped.details = {
         disease_type: profile.details?.disease_type ?? null,

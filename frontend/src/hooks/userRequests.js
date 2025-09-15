@@ -7,6 +7,7 @@ import {
     assignRequest, 
     updateRequestStatus,
     deleteRequest,
+    fetchRequestById,
 } from '../services/requestService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +49,16 @@ export function useAssignedToMe({ enabled = true } = {}) {
     });
 }
 
+export function useRequestById(id, { enabled = true } = {}) {
+    return useQuery({
+        queryKey: ['requests', 'byId', id],
+        queryFn: () => fetchRequestById(id),
+        staleTime: 30 * 1000,
+        enabled: enabled && !!id,
+        onError: (err) => toast.error(getErrMsg(err)),
+    });
+}
+
 /** MUTATIONS **/
 
 export function useCreateRequest() {
@@ -80,6 +91,8 @@ export function useAssignRequest() {
       qc.invalidateQueries({ queryKey: ['requests', 'all'] });
       qc.invalidateQueries({ queryKey: ['requests', 'assignedToMe'] });
       qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
+      // also refresh any request detail views
+      qc.invalidateQueries({ queryKey: ['requests', 'byId'] });
 
       toast.success('Το αίτημα ανατέθηκε με επιτυχία');
     },

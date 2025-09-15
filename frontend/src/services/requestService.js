@@ -54,3 +54,10 @@ export async function deleteRequest(id) {
     // data = { message }
     return data?.message ?? 'Το αίτημα διαγράφηκε';
 }
+
+export async function fetchRequestById(id) {
+    if (!id) throw new Error('Λείπει το id');
+    const { data } = await http.get(API.REQUESTS.BY_ID(id));
+    // data = { request }
+    return data.request;
+}

@@ -18,6 +18,7 @@ import MyRequestsPage from "./pages/requests/MyRequestsPage";
 import RequestsIndex from "./pages/requests/RequestsIndex";
 import AssignedToMePage from "./pages/requests/MyAssignedRequests";
 import UnassignedRequestsPage from "./pages/requests/UnassignedRequestsPage";
+import RequestView from "./pages/requests/RequestView";
 import UsersPage from "./pages/users/UsersPage";
 import UserCreatePage from "./pages/users/UserCreatePage";
 import UserProfileView from "./pages/users/UserProfileView";
@@ -47,6 +48,7 @@ function AppRoutes() {
           <Route path="requests" element={<RequestsIndex />} />
           <Route path="requests/assigned" element={<AssignedToMePage />} />
           <Route path="requests/unassigned" element={<UnassignedRequestsPage />} />
+          <Route path="requests/:id" element={<RequestView />} />
           <Route path="myRequests" element={<MyRequestsPage />} />
           <Route path="requests/new" element={<RequestCreatePage />} />
           {/* Profile */}

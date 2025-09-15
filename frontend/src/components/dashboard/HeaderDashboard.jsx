@@ -1,8 +1,8 @@
 import { useAuth } from "../auth/AuthContext";
 
 export default function DashboardHeader({
-  title,              // αν λείπει -> "Καλωσήρθες, {Όνομα} 👋"
-  subtitle,           // μικρή περιγραφή κάτω από τον τίτλο
+  title,              
+  subtitle,           
   right = null,       // optional δεξί slot (π.χ. φίλτρα / ημερομηνία)
 }) {
   const { user } = useAuth();

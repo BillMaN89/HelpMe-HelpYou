@@ -52,7 +52,7 @@ export default function AssignedToMePage() {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-2xl font-semibold">Ανατεθειμένα σε μένα</h1>
+      <h1 className="text-2xl font-semibold">Ανατεθειμένα σε εμένα</h1>
 
       {isLoading ? (
         <div className="p-4 rounded-xl border bg-white">Φόρτωση…</div>

@@ -65,7 +65,6 @@ export default function ProfilePage() {
   }
 
   async function updateAddress(fields) {
-    // Προσοχή στο postal_code (backend ensureInteger): στείλ' το ως number αν γίνεται
     if (fields.postal_code != null) {
       const num = Number(String(fields.postal_code).trim());
       if (!Number.isNaN(num)) fields.postal_code = num;
