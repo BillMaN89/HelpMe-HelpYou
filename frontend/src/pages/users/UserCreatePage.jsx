@@ -84,32 +84,32 @@ export default function UserCreatePage() {
             <Form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Όνομα</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Όνομα</label>
                   <Field name="first_name" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="first_name" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Επώνυμο</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Επώνυμο</label>
                   <Field name="last_name" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="last_name" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Email</label>
                   <Field name="email" type="email" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="email" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Κωδικός</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Κωδικός</label>
                   <Field name="password" type="password" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="password" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Επιβεβαίωση</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Επιβεβαίωση</label>
                   <Field name="confirmPassword" type="password" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="confirmPassword" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Ημ/νία γέννησης</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Ημ/νία γέννησης</label>
                   <Field name="dob" type="date" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="dob" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
@@ -122,7 +122,7 @@ export default function UserCreatePage() {
                   <Field name="phone_no" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Κινητό</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Κινητό</label>
                   <Field name="mobile" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="mobile" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
@@ -134,22 +134,22 @@ export default function UserCreatePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Διεύθυνση</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Διεύθυνση</label>
                   <Field name="address" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="address" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Αριθμός</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Αριθμός</label>
                   <Field name="address_no" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="address_no" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Τ.Κ.</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Τ.Κ.</label>
                   <Field name="postal_code" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="postal_code" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Πόλη</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Πόλη</label>
                   <Field name="city" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                   <ErrorMessage name="city" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
@@ -157,7 +157,7 @@ export default function UserCreatePage() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Τύπος χρήστη</label>
+                  <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Τύπος χρήστη</label>
                   <Field as="select" name="user_type" className="mt-1 w-full rounded-xl border px-3 py-2">
                     <option value="">-- Επιλέξτε --</option>
                     <option value="patient">Ασθενής</option>
@@ -171,12 +171,12 @@ export default function UserCreatePage() {
               {values.user_type === 'patient' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">Είδος Νόσου</label>
+                    <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Είδος Νόσου</label>
                     <Field name="disease_type" type="text" className="mt-1 w-full rounded-xl border px-3 py-2" />
                     <ErrorMessage name="disease_type" component="div" className="mt-1 text-sm text-red-600" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Ποσοστό Αναπηρίας (%)</label>
+                    <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Ποσοστό Αναπηρίας (%)</label>
                     <Field name="handicap" type="number" min={0} max={100} className="mt-1 w-full rounded-xl border px-3 py-2" />
                     <ErrorMessage name="handicap" component="div" className="mt-1 text-sm text-red-600" />
                   </div>
@@ -191,7 +191,7 @@ export default function UserCreatePage() {
               {values.user_type === 'employee' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Είδος απασχόλησης</label>
+                    <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Είδος απασχόλησης</label>
                     <Field as="select" name="employee_type" className="mt-1 w-full rounded-xl border px-3 py-2">
                       <option value="">-- Επιλέξτε --</option>
                       <option value="full_time">Πλήρης Απασχόληση</option>
@@ -203,13 +203,15 @@ export default function UserCreatePage() {
                     <ErrorMessage name="employee_type" component="div" className="mt-1 text-sm text-red-600" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Τμήμα</label>
+                    <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Τμήμα</label>
                     <Field as="select" name="department" className="mt-1 w-full rounded-xl border px-3 py-2">
                       <option value="">-- Επιλέξτε --</option>
                       <option value="social_services">Κοινωνική Υπηρεσία</option>
                       <option value="psychological_services">Ψυχολογική Υπηρεσία</option>
-                      <option value="management">Γραμματεία</option>
-                      <option value="administration">Διοίκηση</option>
+                      {/* administration corresponds to Secretary (Γραμματεία) */}
+                      <option value="administration">Γραμματεία</option>
+                      {/* management corresponds to Management (Διοίκηση) */}
+                      <option value="management">Διοίκηση</option>
                       <option value="board_of_directors">Δ.Σ.</option>
                     </Field>
                     <ErrorMessage name="department" component="div" className="mt-1 text-sm text-red-600" />

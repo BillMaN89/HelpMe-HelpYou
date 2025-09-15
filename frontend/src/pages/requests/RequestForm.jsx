@@ -32,7 +32,7 @@ export default function RequestForm() {
           <Form className="space-y-4">
             {/* Υπηρεσία */}
             <div>
-              <label htmlFor="service_type" className="block mb-1">Υπηρεσία</label>
+              <label htmlFor="service_type" className="block mb-1 required" aria-required="true">Υπηρεσία</label>
               <Field
                 as="select"
                 id="service_type"
@@ -51,7 +51,7 @@ export default function RequestForm() {
 
             {/* Περιγραφή */}
             <div>
-              <label htmlFor="description" className="block mb-1">Περιγραφή</label>
+              <label htmlFor="description" className="block mb-1 required" aria-required="true">Περιγραφή</label>
               <Field
                 as="textarea"
                 id="description"

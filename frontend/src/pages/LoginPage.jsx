@@ -74,7 +74,7 @@ export default function LoginPage() {
             <Form className="space-y-6">
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 required" aria-required="true">
                   Email
                 </label>
                 <Field
@@ -94,7 +94,7 @@ export default function LoginPage() {
 
               {/* Password */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 required" aria-required="true">
                   Κωδικός Πρόσβασης
                 </label>
                 <Field
@@ -165,5 +165,4 @@ export default function LoginPage() {
     </div>
   );
 }
-
 

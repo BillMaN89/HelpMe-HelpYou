@@ -62,3 +62,10 @@ h1 {
 .border-default {
   border-color: var(--border);
 }
+
+/* Required field asterisk helper: add class "required" on label */
+label.required::after,
+label[aria-required="true"]::after {
+  content: " *";
+  color: #e11d48; /* rose-600 */
+}

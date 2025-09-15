@@ -127,38 +127,38 @@ export default function RegisterPage() {
               <h3 className="text-lg font-medium text-gray-900">Βασικές Πληροφορίες</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 required" aria-required="true">Email</label>
                   <Field id="email" name="email" type="email" autoComplete="email" placeholder="name@example.com" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="email" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
 
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">Κωδικός Πρόσβασης</label>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 required" aria-required="true">Κωδικός Πρόσβασης</label>
                   <Field id="password" name="password" type="password" autoComplete="new-password" placeholder="••••••••" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="password" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div>
-                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Επιβεβαίωση Κωδικού</label>
+                  <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 required" aria-required="true">Επιβεβαίωση Κωδικού</label>
                   <Field id="confirmPassword" name="confirmPassword" type="password" autoComplete="new-password" placeholder="••••••••" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="confirmPassword" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div>
-                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">Όνομα</label>
+                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 required" aria-required="true">Όνομα</label>
                   <Field id="first_name" name="first_name" type="text" autoComplete="given-name" placeholder="Γιώργος" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="first_name" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div>
-                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">Επώνυμο</label>
+                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 required" aria-required="true">Επώνυμο</label>
                   <Field id="last_name" name="last_name" type="text" autoComplete="family-name" placeholder="Παπαδόπουλος" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="last_name" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
 
                 <div>
-                  <label htmlFor="dob" className="block text-sm font-medium text-gray-700">Ημερομηνία Γέννησης</label>
+                  <label htmlFor="dob" className="block text-sm font-medium text-gray-700 required" aria-required="true">Ημερομηνία Γέννησης</label>
                   <Field id="dob" name="dob" type="date" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="dob" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
@@ -178,7 +178,7 @@ export default function RegisterPage() {
 
                 {/* Τύπος Χρήστη */}
                 <div>
-                  <label htmlFor="user_type" className="block text-sm font-medium text-gray-700">Τύπος Χρήστη</label>
+                  <label htmlFor="user_type" className="block text-sm font-medium text-gray-700 required" aria-required="true">Τύπος Χρήστη</label>
                   <Field as="select" id="user_type" name="user_type" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200">
                     <option value="">-- Επιλέξτε --</option>
                     <option value="patient">Ασθενής</option>
@@ -193,22 +193,22 @@ export default function RegisterPage() {
               <h3 className="text-lg font-medium text-gray-900">Στοιχεία Επικοινωνίας</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">Οδός</label>
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-700 required" aria-required="true">Οδός</label>
                   <Field id="address" name="address" type="text" placeholder="Ελ. Βενιζέλου" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="address" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label htmlFor="address_no" className="block text-sm font-medium text-gray-700">Αριθμός</label>
+                  <label htmlFor="address_no" className="block text-sm font-medium text-gray-700 required" aria-required="true">Αριθμός</label>
                   <Field id="address_no" name="address_no" type="text" placeholder="12" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="address_no" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label htmlFor="postal_code" className="block text-sm font-medium text-gray-700">Τ.Κ.</label>
+                  <label htmlFor="postal_code" className="block text-sm font-medium text-gray-700 required" aria-required="true">Τ.Κ.</label>
                   <Field id="postal_code" name="postal_code" type="text" placeholder="12345" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="postal_code" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-gray-700">Πόλη</label>
+                  <label htmlFor="city" className="block text-sm font-medium text-gray-700 required" aria-required="true">Πόλη</label>
                   <Field id="city" name="city" type="text" placeholder="Αθήνα" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="city" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
@@ -229,12 +229,12 @@ export default function RegisterPage() {
               {values.user_type === 'patient' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="disease_type" className="block text-sm font-medium text-gray-700">Είδος Νόσου</label>
+                    <label htmlFor="disease_type" className="block text-sm font-medium text-gray-700 required" aria-required="true">Είδος Νόσου</label>
                     <Field id="disease_type" name="disease_type" type="text" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                     <ErrorMessage name="disease_type" component="div" className="mt-1 text-sm text-red-600" />
                   </div>
                   <div>
-                    <label htmlFor="handicap" className="block text-sm font-medium text-gray-700">Ποσοστό Αναπηρίας (%)</label>
+                    <label htmlFor="handicap" className="block text-sm font-medium text-gray-700 required" aria-required="true">Ποσοστό Αναπηρίας (%)</label>
                     <Field id="handicap" name="handicap" type="number" min={0} max={100} className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                     <ErrorMessage name="handicap" component="div" className="mt-1 text-sm text-red-600" />
                   </div>
@@ -249,7 +249,7 @@ export default function RegisterPage() {
               {values.user_type === 'employee' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="employee_type" className="block text-sm font-medium text-gray-700">Είδος Απασχόλησης</label>
+                    <label htmlFor="employee_type" className="block text-sm font-medium text-gray-700 required" aria-required="true">Είδος Απασχόλησης</label>
                     <Field as="select" id="employee_type" name="employee_type" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200">
                       <option value="">-- Επιλέξτε --</option>
                       <option value="full_time">Πλήρης Απασχόληση</option>
@@ -261,7 +261,7 @@ export default function RegisterPage() {
                     <ErrorMessage name="employee_type" component="div" className="mt-1 text-sm text-red-600" />
                   </div>
                   <div>
-                    <label htmlFor="department" className="block text-sm font-medium text-gray-700">Τμήμα</label>
+                    <label htmlFor="department" className="block text-sm font-medium text-gray-700 required" aria-required="true">Τμήμα</label>
                     <Field as="select" id="department" name="department" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200">
                       <option value="">-- Επιλέξτε --</option>
                       <option value="social_services">Κοινωνική Υπηρεσία</option>

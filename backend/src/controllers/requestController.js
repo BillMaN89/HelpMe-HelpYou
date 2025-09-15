@@ -77,6 +77,15 @@ export async function getAllSupportRequests(req, res) {
       return res.status(200).json({ requests: all.rows });
     }
 
+    //temporary fix for secretary
+    if (roles.includes('secretary')){
+      console.log('User is secretary - returning all requests');
+      const all = await pool.query(
+        'SELECT * FROM support_requests ORDER BY created_at ASC'
+      );
+      return res.status(200).json({ requests: all.rows });
+    }
+
     // === Therapist -> μόνο psychological
     if (roles.includes('therapist')) {
       console.log('User is therapist — returning psychological requests');

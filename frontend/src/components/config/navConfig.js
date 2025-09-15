@@ -8,7 +8,7 @@ export const NAV_ITEMS = [
     requireAllPerm: ['assign_requests'], showFor: ['secretary','admin'] },
 
   { key: 'myRequests', label: 'Τα αιτήματά μου', exact: true, to: '/app/myRequests',
-    requireAnyPerm: ['view_own_requests'], showFor: ['patient', 'volunteer'] },
+    requireAnyPerm: ['view_own_requests'], showFor: ['patient', 'volunteer', 'secretary'] },
 
   { key: 'assignedToMe', label: 'Ανατεθειμένα σε εμένα', exact: true, to: '/app/requests/assigned',
     requireAnyPerm: ['view_assigned_requests'], showFor: ['volunteer','therapist','social_worker', 'admin'] },

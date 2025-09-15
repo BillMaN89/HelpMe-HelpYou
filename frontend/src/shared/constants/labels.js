@@ -41,8 +41,10 @@ export function employeeTypeLabel(t) {
 export const DEPARTMENT_LABELS = {
   social_services: 'Κοινωνική Υπηρεσία',
   psychological_services: 'Ψυχολογική Υπηρεσία',
-  administration: 'Διοίκηση',
-  management: 'Γραμματεία',
+  // Note: administration maps to Secretary (Γραμματεία) in role resolver
+  administration: 'Γραμματεία',
+  // management is general Management/Administration (Διοίκηση)
+  management: 'Διοίκηση',
   board_of_directors: 'Διοικητικό Συμβούλιο',
 };
 
