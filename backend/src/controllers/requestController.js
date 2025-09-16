@@ -29,7 +29,7 @@ export async function getSupportRequests(req, res) {
   const { email } = req.user;
   
   try {
-    //Προβολή αιτημάτων υποστήριξης
+    //Requests view
     const result = await pool.query(
       'SELECT * FROM support_requests WHERE user_email = $1 ORDER BY created_at ASC',
       [email]
@@ -47,7 +47,7 @@ export async function getAllSupportRequests(req, res) {
   const { email } = req.user;
 
   try {
-    // Πάρε τα permissions
+    // permissions
     const permResult = await pool.query(
       `SELECT rp.permission_name
          FROM role_permissions AS rp
@@ -58,7 +58,7 @@ export async function getAllSupportRequests(req, res) {
     const permissions = permResult.rows.map(r => r.permission_name);
     console.log(`Permissions for ${email}:`, permissions);
 
-    // Πάρε τους ρόλους
+    // roles
     const rolesResult = await pool.query(
       `SELECT role_name
          FROM user_roles
@@ -68,7 +68,7 @@ export async function getAllSupportRequests(req, res) {
     const roles = rolesResult.rows.map(r => r.role_name);
     console.log(`Roles for ${email}:`, roles);
 
-    // === Admin -> όλα
+    // === Admin -> everything
     if (roles.includes('admin')) {
       console.log('User is admin — returning all requests');
       const all = await pool.query(
@@ -86,7 +86,7 @@ export async function getAllSupportRequests(req, res) {
       return res.status(200).json({ requests: all.rows });
     }
 
-    // === Therapist -> μόνο psychological
+    // Therapist -> only psychological
     if (roles.includes('therapist')) {
       console.log('User is therapist — returning psychological requests');
       const result = await pool.query(
@@ -97,7 +97,7 @@ export async function getAllSupportRequests(req, res) {
       return res.status(200).json({ requests: result.rows });
     }
 
-    // === Social Worker -> μόνο social
+    // Social Worker -> only social
     if (roles.includes('social_worker')) {
       console.log('User is social_worker — returning social requests');
       const result = await pool.query(
@@ -108,7 +108,7 @@ export async function getAllSupportRequests(req, res) {
       return res.status(200).json({ requests: result.rows });
     }
 
-    // === Assigned requests μόνο
+    // === Assigned requests only
     if (permissions.includes('view_assigned_requests')) {
       console.log('User has view_assigned_requests permission — returning assigned requests');
       const assigned = await pool.query(
@@ -120,7 +120,6 @@ export async function getAllSupportRequests(req, res) {
       return res.status(200).json({ requests: assigned.rows });
     }
 
-    // === Δεν έχει δικαίωμα
     console.warn(`Access denied for ${email} — no matching role/permission`);
     return res.status(403).json({
       message: 'Δεν έχετε δικαίωμα πρόσβασης σε αιτήματα'
@@ -143,7 +142,7 @@ export async function assignSupportRequest(req, res) {
   }
 
   try {
-    // Βεβαιώσου ότι το request υπάρχει
+    // check for request
     const requestCheck = await pool.query(
       'SELECT * FROM support_requests WHERE request_id = $1',
       [id]
@@ -153,7 +152,7 @@ export async function assignSupportRequest(req, res) {
       return res.status(404).json({ message: 'Το αίτημα δεν βρέθηκε' });
     }
 
-    // Βεβαιώσου ότι υπάρχει ο assigned χρήστης
+    // check for assigned user
     const userCheck = await pool.query(
       'SELECT * FROM users WHERE email = $1',
       [assigned_employee_email]
@@ -163,7 +162,7 @@ export async function assignSupportRequest(req, res) {
       return res.status(404).json({ message: 'Ο υπάλληλος/εθελοντής δεν βρέθηκε' });
     }
 
-    // Update request με assigned user
+    // Update request with assigned user
     const updated = await pool.query(
       `UPDATE support_requests
          SET assigned_employee_email = $1,
@@ -194,7 +193,7 @@ export async function getAssignedRequests(req, res) {
       `SELECT *
          FROM support_requests
         WHERE assigned_employee_email = $1
-        ORDER BY created_at ASC`, //παλιότερα πρώτα
+        ORDER BY created_at ASC`, //older first
       [email]
     );
     
@@ -265,7 +264,7 @@ export async function deleteSupportRequest(req, res) {
   }
 }
 
-// Get single request by id (for staff/admin with view_requests)
+// Get single request by id (users with view_requests)
 export async function getSupportRequestById(req, res) {
   const { id } = req.params;
   try {

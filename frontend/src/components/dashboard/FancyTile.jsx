@@ -5,8 +5,8 @@ export default function FancyTile({
   to,
   title,
   desc,
-  Icon,          // από lucide-react
-  badge,         // π.χ. αριθμός ή μικρό label
+  Icon,          // lucide-react
+  badge,         // number / small label: TODO
   tone = "default", // "default" | "primary" | "caution"
 }) {
   const toneClasses = {
@@ -47,9 +47,9 @@ export default function FancyTile({
           </div>
         </div>
 
-        {/* μικρό affordance πάνω δεξιά */}
+        {/* small affordance top right */}
         <div className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition text-xs text-slate-400">
-          Enter ↵
+          Είσοδος ↵
         </div>
       </Link>
     </motion.div>

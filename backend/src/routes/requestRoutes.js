@@ -6,43 +6,42 @@ import { requirePermission } from '../middlewares/requirePermission.js';
 const router = express.Router();
 router.use(verifyToken);
 
-//Δημιουργία αιτήματος υποστήριξης
+//create support request
 router.post('/', 
     requirePermission(['create_request']),
     createSupportRequest);
    
-//Προβολή προσωπικών αιτημάτων υποστήριξης
+//view personal requests
 router.get('/', 
     requirePermission(['view_own_requests']),
     getSupportRequests);
 
-//Προβολή όλων των αιτημάτων υποστήριξης
-// Επιτρέπει πρόσβαση μόνο σε υπάλληλους και admins
+//view all requests
 router.get('/all-requests', 
     requirePermission(['view_requests']),
     getAllSupportRequests);
 
-//Ανάθεση αιτήματος
+//assign request
 router.patch('/:id/assign', 
     requirePermission(['assign_requests']), 
     assignSupportRequest);
 
-//Προβολή ανατεθειμένων αιτημάτων
+//view assigned requests
 router.get('/assigned-to-me',
   requirePermission(['view_assigned_requests']),
   getAssignedRequests);
 
-// Προβολή ενός αιτήματος (staff/admin)
+// view request (staff/admin)
 router.get('/:id',
   requirePermission(['view_requests']),
   getSupportRequestById);
 
-// Ενημέρωση κατάστασης αιτήματος
+// update request status
 router.patch('/:id/status',
   requirePermission(['edit_req_status']),
   updateSupportRequestStatus);
 
-// Διαγραφή αιτήματος
+// delete request
 router.delete('/:id',
   requirePermission(['assign_requests']),
   deleteSupportRequest);

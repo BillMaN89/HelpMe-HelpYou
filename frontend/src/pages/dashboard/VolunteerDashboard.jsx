@@ -23,7 +23,7 @@ export default function VolunteerDashboard() {
           desc="Δες τα αιτήματα που έχεις δημιουργήσει."
           Icon={FileText}
           tone="default"
-          // badge={5} // αργότερα από /dashboard/summary
+          // badge={5} // TODO: /dashboard/summary
         />
         <FancyTile
           to="/app/requests/new"

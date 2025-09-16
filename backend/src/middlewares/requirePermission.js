@@ -11,7 +11,7 @@ export function requirePermission(requiredPermissions) {
     }
 
     try {
-        //Πάρε τα permissions
+        //permission retrieval
       const result = await pool.query(
         `SELECT rp.permission_name
            FROM role_permissions AS rp
@@ -21,7 +21,7 @@ export function requirePermission(requiredPermissions) {
       );
       
       const userPermissions = result.rows.map(r => r.permission_name);
-      //Έλεγχος αν ο χρήστης έχει το δικαίωμα ανάθεσης αιτημάτων
+      //check if user can assign requests
       const hasPermission = permissions.some(p => userPermissions.includes(p));
 
       if (!hasPermission) {

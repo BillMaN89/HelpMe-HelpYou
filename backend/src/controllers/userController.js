@@ -1,8 +1,7 @@
 import { pool } from '../db/pool.js';
 import { isEmpty, ensureInteger } from '../utils/helpers.js';
 
-// List users (permission-aware)
-// Allowed if requester has any of: manage_users, view_user, view_patient_info
+// List users (permission-aware of: manage_users, view_user, view_patient_info)
 export async function listUsers(req, res) {
   try {
     const requester = req.user?.email;
@@ -222,7 +221,7 @@ export async function updateUser(req, res) {
         if (r.rows.length === 0) {
           throw Object.assign(new Error('Δεν βρέθηκε χρήστης με αυτό το email.'), { status: 404 });
         }
-        // ενημέρωσε το targetType αν άλλαξε user_type από admin
+        // update user_type if changed by admin
         if (!targetType && allowedUserFields.user_type) {
           targetType = allowedUserFields.user_type;
         }
@@ -260,7 +259,7 @@ export async function updateUser(req, res) {
           await upsertDetails(client, 'patient_details', 'email', target_email, allowedDetailsFields);
         } else if (targetType === 'volunteer') {
           await upsertDetails(client, 'volunteer_details', 'email', target_email, allowedDetailsFields);
-          // NOTE: help_types παραμένουν εκτός του παρόντος endpoint
+          // NOTE: help_types παραμένουν εκτός του παρόντος endpoint, TODO σε επόμενο κύκλο
         } else if (targetType === 'employee') {
           await upsertDetails(client, 'employee_details', 'email', target_email, allowedDetailsFields);
         }
@@ -297,7 +296,6 @@ export async function updateUser(req, res) {
 }
 
 
-//User delete
 export async function deleteUserProfile(req, res) {
   try {
     const requester = req.user.email;
@@ -665,7 +663,7 @@ async function getUserFullProfile(email) {
       );
       details = rows[0] || {};
 
-      // help_types για volunteer
+      // help_types for volunteer
       const { rows: hrows } = await pool.query(
         `SELECT ht.help_type_id, ht.help_category
            FROM volunteer_help_type vht
@@ -714,7 +712,6 @@ async function getUserFullProfile(email) {
 // Shape profile for viewer using permission-based admin check
 // - Admin (has 'manage_roles') -> sees everything
 // - Non-admin self -> limited per user_type
-// - Non-admin viewing others -> controller should 403 before calling this
 async function shapeProfileForViewer(profile, { viewerEmail, targetEmail }) {
   const isAdmin = await userHasPermission(viewerEmail, 'manage_roles');
   const isSelf = viewerEmail === targetEmail;

@@ -30,7 +30,7 @@ export default function RequestForm() {
       >
         {({ isValid, dirty, resetForm }) => (
           <Form className="space-y-4">
-            {/* Υπηρεσία */}
+            {/* Service */}
             <div>
               <label htmlFor="service_type" className="block mb-1 required" aria-required="true">Υπηρεσία</label>
               <Field
@@ -49,7 +49,7 @@ export default function RequestForm() {
               </div>
             </div>
 
-            {/* Περιγραφή */}
+            {/* Description */}
             <div>
               <label htmlFor="description" className="block mb-1 required" aria-required="true">Περιγραφή</label>
               <Field

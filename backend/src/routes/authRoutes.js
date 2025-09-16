@@ -5,9 +5,9 @@ import { verifyToken } from '../middlewares/verifyToken.js';
 
 const router = express.Router();
 
-// Route για εγγραφή χρήστη 
+//register route
 router.post('/register', registerUser);
-// Route για login χρήστη
+//login route
 router.post('/login', loginUser);
 
 export default router;

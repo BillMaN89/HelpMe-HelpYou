@@ -47,13 +47,11 @@ export default function LoginPage() {
             try {
               // endpoint
               const { data } = await http.post(API.AUTH.LOGIN, values);
-              //debug log
-              //console.log("LOGIN response:", data);
               // token storage
               if (data?.token) {
                 localStorage.setItem("access_token", data.token);
               }
-              // Navigate to dashboard/home after successful login
+              // Navigate to dashboard after successful login
               const me = await http.get(API.USERS.ME);
               setUser({ ...data.user, roles: data.roles, permissions: data.permissions });
               toast.success("Συνδέθηκες επιτυχώς! 🎉");
@@ -150,6 +148,7 @@ export default function LoginPage() {
         </Formik>
 
         {/* Footer helper */}
+        {/*TODO: Password reset*/}
         {/* <p className="mt-6 text-center text-xs text-gray-500">
           Ξεχάσατε τον κωδικό; <Link to="/forgot-password" className="underline">Ανάκτηση</Link>
         </p> */}

@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import { pool } from '../db/pool.js';
 
 export const verifyToken = (req, res, next) => {
-    // Έλεγχος αν το token υπάρχει στο header
+    // check if token exists in header
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 

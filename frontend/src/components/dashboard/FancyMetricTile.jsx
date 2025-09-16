@@ -4,7 +4,7 @@ export default function FancyMetricTile({
   title,
   value = 0,
   subtext,
-  Icon,              // από lucide-react (προαιρετικό)
+  Icon,              // lucide-react
   tone = "default",  // "default" | "primary" | "caution" | "success"
 }) {
   const toneClasses = {

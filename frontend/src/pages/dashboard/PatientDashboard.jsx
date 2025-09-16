@@ -22,7 +22,7 @@ export default function PatientDashboard() {
           desc="Δες την πορεία των αιτημάτων σου."
           Icon={FileText}
           tone="default"
-          // badge={2} // όταν βάλω summary counts
+          // badge={2} //TODO: summary count
         />
         <FancyTile
           to="/app/requests/new"

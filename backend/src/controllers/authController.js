@@ -60,7 +60,7 @@ export const loginUser = async (req, res) => {
   }
 };
 
-//η αποσύνδεση είναι client side
+//client-side logout
 export const logoutUser = async (req, res) => {};
 
 
@@ -274,31 +274,6 @@ export function resolveRoleForUser(user_type, department, employee_type) {
 
   return null; //unknown user_type
 }
-
-// Alternative: Config-based mapping instead of switch
-// export function resolveRoleForUserConfig(user_type, department) {
-//   const roleMap = {
-//     patient: 'patient',
-//     volunteer: 'volunteer',
-//     employee: {
-//       psychological_services: 'therapist',
-//       social_services: 'social_worker',
-//       administration: 'secretary',
-//       management: 'viewer',
-//       board_of_directors: 'viewer'
-//     }
-//   };
-
-//   if (user_type === 'patient' || user_type === 'volunteer') {
-//     return roleMap[user_type];
-//   }
-
-//   if (user_type === 'employee') {
-//     return roleMap.employee[department] || null;
-//   }
-
-//   return null;
-// }
 
 export async function upsertVolunteerHelpTypes(client, email, helpTypes) {
   const ids = [];

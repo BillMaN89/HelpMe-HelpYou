@@ -5,25 +5,25 @@ import { verifyToken } from '../middlewares/verifyToken.js';
 const router = express.Router();
 router.use(verifyToken)
 
-//Λίστα χρηστών (με permissions)
+//User list (permission based)
 router.get('/', listUsers);
 
-//Λίστα ρόλων (admin-only)
+//Roles list (admin-only)
 router.get('/roles', listRoles);
 
-//Προβολή προφιλ
+//View profile
 router.get( '/me', getUserProfile);
 
-//Ενημέρωση προφιλ χρήστη
+//Update user profile
 router.patch('/me', updateUser);
 
-//Προβολή χρήστη με email
+//View user by email
 router.get ('/:email', getUserByEmail);
 
-//Ενημέρωση ρόλων χρήστη (admin-only)
+//Update user roles (admin-only)
 router.patch('/:email/roles', setUserRoles);
 
-//Διαγραφή χρήστη
+//Delete user
 router.delete('/:email', deleteUserProfile);
 
 export default router;

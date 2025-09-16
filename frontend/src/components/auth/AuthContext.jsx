@@ -3,7 +3,7 @@ import { createContext, useContext, useMemo } from "react";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ user, setUser, children }) {
-  // αποσύνδεση χρήστη
+  // user logout
   function logout() {
     try {
       localStorage.removeItem("access_token");

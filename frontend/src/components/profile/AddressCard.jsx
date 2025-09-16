@@ -35,7 +35,7 @@ export default function AddressCard({ data, editable = [], onSubmit }) {
     ) === false; 
   }, [data, form]);
 
-  // Diff μόνο για editable fields
+  // Diff only for editable fields
   const changes = useMemo(() => {
     const out = {};
     for (const k of editable) {

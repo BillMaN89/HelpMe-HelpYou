@@ -73,7 +73,7 @@ export default function StaffDashboardFancy() {
 
       <QuickActions />
 
-      {/* KPIs ως Fancy tiles */}
+      {/* KPIs as Fancy tiles */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {can("view_requests") && (
           <FancyMetricTile

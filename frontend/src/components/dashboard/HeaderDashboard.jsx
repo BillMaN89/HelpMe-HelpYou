@@ -3,7 +3,7 @@ import { useAuth } from "../auth/AuthContext";
 export default function DashboardHeader({
   title,              
   subtitle,           
-  right = null,       // optional δεξί slot (π.χ. φίλτρα / ημερομηνία)
+  right = null,       // optional right slot (filters / date)
 }) {
   const { user } = useAuth();
   const hello =

@@ -9,17 +9,7 @@ import { API } from '../../shared/constants/api';
 import { roleLabel, userTypeLabel, departmentLabel, employeeTypeLabel } from '../../shared/constants/labels';
 import { useAssignRequest } from '../../hooks/userRequests';
 import Button from '../../components/Button';
-
-function formatDate(iso) {
-  if (!iso) return '-';
-  try {
-    const d = new Date(iso);
-    return d.toLocaleString('el-GR', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
-  } catch { return iso; }
-}
+import { formatDate } from '../../shared/utils/dates';
 
 export default function RequestView() {
   const { id } = useParams();

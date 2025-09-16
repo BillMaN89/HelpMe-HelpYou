@@ -208,9 +208,7 @@ export default function UserCreatePage() {
                       <option value="">-- Επιλέξτε --</option>
                       <option value="social_services">Κοινωνική Υπηρεσία</option>
                       <option value="psychological_services">Ψυχολογική Υπηρεσία</option>
-                      {/* administration corresponds to Secretary (Γραμματεία) */}
                       <option value="administration">Γραμματεία</option>
-                      {/* management corresponds to Management (Διοίκηση) */}
                       <option value="management">Διοίκηση</option>
                       <option value="board_of_directors">Δ.Σ.</option>
                     </Field>

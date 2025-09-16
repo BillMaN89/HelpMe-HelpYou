@@ -117,7 +117,7 @@ export default function ExtraInfoCard({ data = {}, userType, editable = [], onSu
             );
           })}
 
-          {/* Volunteer help_types εμφάνιση μόνο */}
+          {/* Volunteer help_types read only (temporary) */}
           {userType === "volunteer" && Array.isArray(data?.help_types) && (
             <div className="py-2">
               <span className="text-sm" style={{ color: "var(--text-muted)" }}>Κατηγορίες βοήθειας</span>
