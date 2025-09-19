@@ -218,7 +218,7 @@ export default function RegisterPage() {
                   <ErrorMessage name="phone_no" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>
-                  <label htmlFor="mobile" className="block text-sm font-medium text-gray-700">Κινητό Τηλέφωνο</label>
+                  <label htmlFor="mobile" className="block text-sm font-medium text-gray-700" aria-required="true">Κινητό Τηλέφωνο</label>
                   <Field id="mobile" name="mobile" type="text" placeholder="6901234567" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
                   <ErrorMessage name="mobile" component="div" className="mt-1 text-sm text-red-600" />
                 </div>

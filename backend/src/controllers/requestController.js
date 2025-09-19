@@ -86,6 +86,15 @@ export async function getAllSupportRequests(req, res) {
       return res.status(200).json({ requests: all.rows });
     }
 
+    // Board viewer -> read-only access to everything
+    if (roles.includes('viewer')) {
+      console.log('User is viewer — returning all requests (read-only)');
+      const all = await pool.query(
+        'SELECT * FROM support_requests ORDER BY created_at ASC'
+      );
+      return res.status(200).json({ requests: all.rows });
+    }
+
     // Therapist -> only psychological
     if (roles.includes('therapist')) {
       console.log('User is therapist — returning psychological requests');
