@@ -40,7 +40,7 @@ export const loginUser = async (req, res) => {
         permissions,
       },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '10h' }
     );
 
     return res.status(200).json({
