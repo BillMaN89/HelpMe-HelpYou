@@ -15,6 +15,12 @@ export function validateRequired(fields) {
   return !fields.some(isEmpty);
 }
 
+export function isStrongPassword(password) {
+  if (typeof password !== 'string') return false;
+  const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z])(?=\S+$).{12,}$/;
+  return strongPasswordPattern.test(password);
+}
+
 export async function getUserRolesAndPermissions(email, client = pool) {
   const normalized = String(email).trim().toLowerCase();
   const { rows } = await client.query(
@@ -30,4 +36,3 @@ export async function getUserRolesAndPermissions(email, client = pool) {
   );
   return rows[0] ?? { roles: [], permissions: [] };
 }
-

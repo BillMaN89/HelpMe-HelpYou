@@ -12,7 +12,10 @@ const Schema = Yup.object({
   email: Yup.string().email('Δώστε έγκυρο email').required('Απαραίτητο πεδίο'),
   first_name: Yup.string().min(2, 'Τουλάχιστον 2 χαρακτήρες').max(50, 'Το πολύ 50 χαρακτήρες').required('Απαραίτητο πεδίο'),
   last_name: Yup.string().min(2, 'Τουλάχιστον 2 χαρακτήρες').max(50, 'Το πολύ 50 χαρακτήρες').required('Απαραίτητο πεδίο'),
-  password: Yup.string().min(8, 'Τουλάχιστον 8 χαρακτήρες').required('Απαραίτητο πεδίο'),
+  password: Yup.string()
+    .min(12, 'Τουλάχιστον 12 χαρακτήρες')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z])(?=\S+$).{12,}$/, 'Πρέπει να περιέχει πεζά, κεφαλαία, αριθμό και ειδικό σύμβολο')
+    .required('Απαραίτητο πεδίο'),
   confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Οι κωδικοί δεν ταιριάζουν').required('Απαραίτητο πεδίο'),
   dob: Yup.date().max(new Date(), 'Η ημερομηνία γέννησης δεν μπορεί να είναι στο μέλλον').required('Απαραίτητο πεδίο'),
   birth_place: Yup.string().max(100, 'Το πολύ 100 χαρακτήρες'),
@@ -101,6 +104,7 @@ export default function UserCreatePage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 required" aria-required="true">Κωδικός</label>
                   <Field name="password" type="password" className="mt-1 w-full rounded-xl border px-3 py-2" />
+                  <p className="mt-1 text-xs text-slate-500">Τουλάχιστον 12 χαρακτήρες με πεζά, κεφαλαία, αριθμό και ειδικό σύμβολο.</p>
                   <ErrorMessage name="password" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
                 <div>

@@ -12,7 +12,10 @@ const RegisterSchema = Yup.object({
   email: Yup.string().email('Δώστε έγκυρο email').required('Απαραίτητο πεδίο'),
   first_name: Yup.string().min(2, 'Τουλάχιστον 2 χαρακτήρες').max(50, 'Το πολύ 50 χαρακτήρες').required('Απαραίτητο πεδίο'),
   last_name: Yup.string().min(2, 'Τουλάχιστον 2 χαρακτήρες').max(50, 'Το πολύ 50 χαρακτήρες').required('Απαραίτητο πεδίο'),
-  password: Yup.string().min(8, 'Τουλάχιστον 8 χαρακτήρες').required('Απαραίτητο πεδίο'),
+  password: Yup.string()
+    .min(12, 'Τουλάχιστον 12 χαρακτήρες')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z])(?=\S+$).{12,}$/, 'Πρέπει να περιέχει πεζά, κεφαλαία, αριθμό και ειδικό σύμβολο')
+    .required('Απαραίτητο πεδίο'),
   confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Οι κωδικοί δεν ταιριάζουν').required('Απαραίτητο πεδίο'),
   dob: Yup.date().max(new Date(), 'Η ημερομηνία γέννησης δεν μπορεί να είναι στο μέλλον').required('Απαραίτητο πεδίο'),
   birth_place: Yup.string().max(100, 'Το πολύ 100 χαρακτήρες'),
@@ -136,6 +139,7 @@ export default function RegisterPage() {
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700 required" aria-required="true">Κωδικός Πρόσβασης</label>
                   <Field id="password" name="password" type="password" autoComplete="new-password" placeholder="••••••••" className="mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200" />
+                  <p className="mt-1 text-xs text-gray-500">Τουλάχιστον 12 χαρακτήρες με πεζά, κεφαλαία, αριθμό και ειδικό σύμβολο.</p>
                   <ErrorMessage name="password" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
 

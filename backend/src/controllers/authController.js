@@ -1,7 +1,7 @@
 import { pool } from '../db/pool.js';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { isEmpty, ensureInteger, validateRequired } from '../utils/helpers.js';
+import { isEmpty, ensureInteger, validateRequired, isStrongPassword } from '../utils/helpers.js';
 import dotenv from "dotenv";
 import { getUserRolesAndPermissions } from '../utils/helpers.js';
 
@@ -103,6 +103,12 @@ export const registerUser = async (req, res) => {
     // --- Basic validation ---
     if (!validateRequired([email, first_name, last_name, password, dob, mobile, user_type])) {
       return res.status(400).json({ message: "Λείπουν υποχρεωτικά πεδία χρήστη." });
+    }
+
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({
+        message: "Ο κωδικός πρέπει να έχει τουλάχιστον 12 χαρακτήρες, με πεζά, κεφαλαία, αριθμό και ειδικό σύμβολο.",
+      });
     }
 
     if (!validateRequired([address, address_no, postal_code, city])) {
