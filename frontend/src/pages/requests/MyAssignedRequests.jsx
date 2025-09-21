@@ -1,8 +1,6 @@
-import { useAssignedToMe, useUpdateRequestStatus, useDeleteRequest } from "../../hooks/userRequests";
+import { useAssignedToMe, useUpdateRequestStatus } from "../../hooks/userRequests";
 import { getStatusLabel } from "../../shared/constants/requestStatus";
 import { getServiceTypeLabel } from "../../shared/constants/serviceTypes";
-import Button from "../../components/Button";
-import { Trash2 } from "lucide-react";
 import { useAuth } from "../../components/auth/AuthContext";
 import StatusPill from "../../shared/components/StatusPill";
 import { formatDate } from "../../shared/utils/dates";
@@ -10,17 +8,10 @@ import { formatDate } from "../../shared/utils/dates";
 export default function AssignedToMePage() {
   const { data, isLoading, isFetching } = useAssignedToMe();
   const updateStatus = useUpdateRequestStatus();
-  const removeReq = useDeleteRequest();
   const { can } = useAuth();
   const requests = data ?? [];
   const canEditStatus = can('edit_req_status');
-  const canDelete = can('update_request');
-
-  function handleDelete(r) {
-    if (!window.confirm(`Διαγραφή αιτήματος #${r.request_id}; Είστε σίγουροι;`)) return;
-    removeReq.mutate({ id: r.request_id });
-  }
-
+  
   return (
     <section className="space-y-4">
       <h1 className="text-2xl font-semibold">Ανατεθειμένα σε εμένα</h1>
@@ -40,7 +31,6 @@ export default function AssignedToMePage() {
                 <th className="px-4 py-3 text-left font-medium">Υπηρεσία</th>
                 <th className="px-4 py-3 text-left font-medium">Κατάσταση</th>
                 <th className="px-4 py-3 text-left font-medium">Περιγραφή</th>
-                {canDelete && <th className="px-4 py-3 text-left font-medium">Ενέργειες</th>}
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -76,21 +66,6 @@ export default function AssignedToMePage() {
                   <td className="px-4 py-3 text-slate-700">
                     <span title={r.description}>{(r.description ?? "").slice(0, 120)}{(r.description?.length ?? 0) > 120 ? "…" : ""}</span>
                   </td>
-                    {canDelete && (
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDelete(r)}
-                          loading={removeReq.isPending}
-                          title="Διαγραφή αιτήματος"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  )}
                 </tr>
               ))}
             </tbody>
