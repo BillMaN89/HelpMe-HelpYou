@@ -7,11 +7,6 @@ const DEFAULT_OPTIONS = {
   minute: '2-digit',
 };
 
-/**
- * Format an ISO date string in Greek locale while tolerating invalid inputs.
- * When the value cannot be parsed it falls back to the original string unless a
- * custom fallback is provided.
- */
 export function formatDate(iso, { locale = DEFAULT_LOCALE, options, fallback = 'original' } = {}) {
   if (!iso) {
     return fallback === 'original' ? '-' : fallback;
