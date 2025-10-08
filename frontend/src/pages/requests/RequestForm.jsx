@@ -1,6 +1,6 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { useCreateRequest } from '../../hooks/userRequests';
+import { useCreateRequest } from '../../hooks/UseUserRequests';
 import Button from '../../components/Button';
 
 const schema = Yup.object({
@@ -11,7 +11,7 @@ const schema = Yup.object({
 const SERVICE_OPTIONS = [
   { value: '', label: '— Επιλογή υπηρεσίας —' },
   { value: 'social', label: 'Κοινωνική Υπηρεσία' },
-  { value: 'psychological', label: 'Ψυχολογική Υποστήριξη' },
+  { value: 'psychological', label: 'Ψυχολογική Υπηρεσία' },
 ];
 
 export default function RequestForm() {

@@ -1,13 +1,13 @@
 import { Link, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../components/auth/AuthContext';
-import { useRequestById } from '../../hooks/userRequests';
+import { useRequestById } from '../../hooks/UseUserRequests';
 import { getServiceTypeLabel } from '../../shared/constants/serviceTypes';
 import { getStatusLabel } from '../../shared/constants/requestStatus';
 import http from '../../shared/lib/http';
 import { API } from '../../shared/constants/api';
 import { roleLabel, userTypeLabel, departmentLabel, employeeTypeLabel } from '../../shared/constants/labels';
-import { useAssignRequest } from '../../hooks/userRequests';
+import { useAssignRequest } from '../../hooks/UseUserRequests';
 import Button from '../../components/Button';
 import { formatDate } from '../../shared/utils/dates';
 

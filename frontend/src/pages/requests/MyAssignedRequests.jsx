@@ -1,4 +1,4 @@
-import { useAssignedToMe, useUpdateRequestStatus } from "../../hooks/userRequests";
+import { useAssignedToMe, useUpdateRequestStatus } from "../../hooks/UseUserRequests";
 import { getStatusLabel } from "../../shared/constants/requestStatus";
 import { getServiceTypeLabel } from "../../shared/constants/serviceTypes";
 import { useAuth } from "../../components/auth/AuthContext";

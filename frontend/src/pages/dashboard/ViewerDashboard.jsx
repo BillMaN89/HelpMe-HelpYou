@@ -3,7 +3,7 @@ import { ClipboardList, ClipboardCheck, ClipboardX, BarChart2 } from "lucide-rea
 import DashboardHeader from "../../components/dashboard/HeaderDashboard";
 import FancyMetricTile from "../../components/dashboard/FancyMetricTile";
 import RequestList from "../../components/dashboard/RequestList";
-import { useAllRequests } from "../../hooks/userRequests";
+import { useAllRequests } from "../../hooks/UseUserRequests";
 import { REQUEST_STATUS } from "../../shared/constants/requestStatus";
 
 export default function ViewerDashboard() {

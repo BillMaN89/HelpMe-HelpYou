@@ -3,7 +3,7 @@ import DashboardHeader from "../../components/dashboard/HeaderDashboard";
 import FancyTile from "../../components/dashboard/FancyTile";
 import RequestList from "../../components/dashboard/RequestList";
 import { useAuth } from "../../components/auth/AuthContext";
-import { useMyRequests } from "../../hooks/userRequests";
+import { useMyRequests } from "../../hooks/UseUserRequests";
 import { FileText, PlusCircle } from "lucide-react";
 
 export default function PatientDashboard() {
