@@ -187,7 +187,6 @@ export default function RegisterPage() {
                     <option value="">-- Επιλέξτε --</option>
                     <option value="patient">Ασθενής</option>
                     <option value="volunteer">Εθελοντής</option>
-                    <option value="employee">Υπάλληλος</option>
                   </Field>
                   <ErrorMessage name="user_type" component="div" className="mt-1 text-sm text-red-600" />
                 </div>
