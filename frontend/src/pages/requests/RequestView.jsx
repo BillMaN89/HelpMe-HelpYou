@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../components/auth/AuthContext';
 import { useRequestById } from '../../hooks/UseUserRequests';
@@ -13,6 +13,8 @@ import { formatDate } from '../../shared/utils/dates';
 
 export default function RequestView() {
   const { id } = useParams();
+  const location = useLocation();
+  const backTo = location.state?.from ?? '/app/requests';
   const { data: req, isLoading, error } = useRequestById(id);
   const { can } = useAuth();
   const canViewUserProfiles = can('manage_users') || can('view_user') || can('update_user') || can('view_patient_info');
@@ -69,7 +71,7 @@ export default function RequestView() {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Αίτημα #{id}</h1>
-        <Link to="/app/requests" className="text-sm text-indigo-700 hover:underline">← Πίσω στη λίστα</Link>
+        <Link to={backTo} className="text-sm text-indigo-700 hover:underline">← Πίσω στη λίστα</Link>
       </div>
 
       {isLoading && (

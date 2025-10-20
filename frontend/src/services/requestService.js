@@ -23,6 +23,12 @@ export async function fetchAllRequests() {
     return data.requests;
 };
 
+export async function fetchUnassignedRequests() {
+    const { data } = await http.get(API.REQUESTS.UNASSIGNED);
+    // data = { requests: [] }
+    return data.requests;
+};
+
 export async function fetchAssignedToMe() {
     const { data } = await http.get(API.REQUESTS.ASSIGNED_TO_ME);
     // data = { requests: [] }

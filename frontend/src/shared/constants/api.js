@@ -15,6 +15,7 @@ export const API = {
     CREATE: "/api/requests",             // POST
     MINE: "/api/requests",               // GET (τα δικά μου)
     ALL: "/api/requests/all-requests",   // GET (για staff/admin)
+    UNASSIGNED: "/api/requests/unassigned", // GET (για ανάθεση)
     ASSIGN: (id) => `/api/requests/${id}/assign`, // PATCH
     ASSIGNED_TO_ME: "/api/requests/assigned-to-me", // GET
     BY_ID: (id) => `/api/requests/${id}`, // GET | PATCH | DELETE

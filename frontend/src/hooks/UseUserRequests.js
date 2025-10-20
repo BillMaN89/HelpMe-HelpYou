@@ -8,6 +8,7 @@ import {
     updateRequestStatus,
     deleteRequest,
     fetchRequestById,
+    fetchUnassignedRequests,
 } from '../services/requestService';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -45,6 +46,16 @@ export function useAssignedToMe({ enabled = true } = {}) {
         queryFn: fetchAssignedToMe,
         staleTime: 30 * 1000,
         enabled, // only run if user has permission
+        onError: (err) => toast.error(getErrMsg(err)),
+    });
+}
+
+export function useUnassignedRequests({ enabled = true } = {}) {
+    return useQuery({
+        queryKey: ['requests', 'unassigned'],
+        queryFn: fetchUnassignedRequests,
+        staleTime: 30 * 1000,
+        enabled,
         onError: (err) => toast.error(getErrMsg(err)),
     });
 }
@@ -91,6 +102,7 @@ export function useAssignRequest() {
       qc.invalidateQueries({ queryKey: ['requests', 'all'] });
       qc.invalidateQueries({ queryKey: ['requests', 'assignedToMe'] });
       qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'unassigned'] });
       // also refresh any request detail views
       qc.invalidateQueries({ queryKey: ['requests', 'byId'] });
 
@@ -128,6 +140,7 @@ export function useDeleteRequest() {
       qc.invalidateQueries({ queryKey: ['requests', 'assignedToMe'] });
       qc.invalidateQueries({ queryKey: ['requests', 'all'] });
       qc.invalidateQueries({ queryKey: ['requests', 'mine'] });
+      qc.invalidateQueries({ queryKey: ['requests', 'unassigned'] });
       toast.success('Το αίτημα διαγράφηκε');
     },
     onError: (err) => {

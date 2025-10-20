@@ -230,6 +230,29 @@ export async function getAssignedRequests(req, res) {
   }
 }
 
+export async function getUnassignedRequests(_req, res) {
+  try {
+    const { rows } = await pool.query(
+      `SELECT sr.*,
+              u.first_name AS requester_first_name,
+              u.last_name AS requester_last_name
+         FROM support_requests AS sr
+         LEFT JOIN users AS u
+           ON sr.user_email = u.email
+        WHERE sr.status = 'unassigned'
+          AND sr.assigned_employee_email IS NULL
+        ORDER BY sr.created_at ASC`
+    );
+
+    return res.status(200).json({ requests: rows });
+  } catch (error) {
+    console.error('Σφάλμα κατά την προβολή μη ανατεθειμένων αιτημάτων:', error);
+    return res.status(500).json({
+      message: 'Σφάλμα κατά την προβολή μη ανατεθειμένων αιτημάτων'
+    });
+  }
+}
+
 export async function updateSupportRequestStatus(req, res) {
   const { id } = req.params;
   const { status } = req.body;

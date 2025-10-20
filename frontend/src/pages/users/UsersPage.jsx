@@ -99,8 +99,7 @@ export default function UsersPage() {
                             className="inline-flex items-center gap-1 text-sm text-indigo-700 hover:underline"
                             title="Προβολή προφίλ"
                           >
-                            <Eye className="h-4 w-4" />
-                            <span>Προβολή</span>
+                            <Eye className="h-6 w-6 text-indigo-600" />
                           </Link>
                           {canManageUsers && (
                             <Button
