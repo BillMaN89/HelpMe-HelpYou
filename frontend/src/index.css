@@ -49,7 +49,7 @@ h1 {
   line-height: 1.1;
 }
 
-/* Προαιρετικά: utility helpers αν τα θες global */
+
 .hr-muted {
   border-color: var(--border);
 }

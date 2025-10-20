@@ -128,13 +128,6 @@ export default function AddressCard({ data, editable = [], onSubmit }) {
                 </button>
                 <button
                   className="rounded-md border px-2 py-1 text-sm hover:bg-slate-50"
-                  onClick={handleReset}
-                  type="button"
-                >
-                  Reset
-                </button>
-                <button
-                  className="rounded-md border px-2 py-1 text-sm hover:bg-slate-50"
                   onClick={() => { setEdit(false); setForm(normalize(data)); }}
                   type="button"
                 >

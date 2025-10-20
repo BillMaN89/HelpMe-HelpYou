@@ -87,9 +87,6 @@ export default function ExtraInfoCard({ data = {}, userType, editable = [], onSu
                 >
                   Αποθήκευση
                 </button>
-                <button className="rounded-md border px-2 py-1 text-sm hover:bg-slate-50" onClick={() => setForm({ ...data })} type="button">
-                  Reset
-                </button>
                 <button className="rounded-md border px-2 py-1 text-sm hover:bg-slate-50" onClick={() => { setEdit(false); setForm({ ...data }); }} type="button">
                   Άκυρο
                 </button>

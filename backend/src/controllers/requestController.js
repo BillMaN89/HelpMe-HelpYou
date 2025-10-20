@@ -31,7 +31,14 @@ export async function getSupportRequests(req, res) {
   try {
     //Requests view
     const result = await pool.query(
-      'SELECT * FROM support_requests WHERE user_email = $1 ORDER BY created_at ASC',
+      `SELECT sr.*,
+              u.first_name AS assigned_employee_first_name,
+              u.last_name AS assigned_employee_last_name
+         FROM support_requests AS sr
+         LEFT JOIN users AS u
+           ON sr.assigned_employee_email = u.email
+        WHERE sr.user_email = $1
+        ORDER BY sr.created_at ASC`,
       [email]
     );
 

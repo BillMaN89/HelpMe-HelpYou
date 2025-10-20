@@ -45,17 +45,24 @@ export default function MyRequestsPage() {
               </tr>
             </thead>
             <tbody className="divide-y">
-              {requests.map((r) => (
-                <tr key={r.request_id}>
-                  <td className="px-4 py-3 whitespace-nowrap">{formatDate(r.created_at)}</td>
-                  <td className="px-4 py-3">{formatService(r.service_type)}</td>
-                  <td className="px-4 py-3"><StatusPill status={r.status} /></td>
-                  <td className="px-4 py-3 text-slate-700">
-                    <span title={r.description}>{(r.description ?? "").slice(0, 120)}{(r.description?.length ?? 0) > 120 ? "…" : ""}</span>
-                  </td>
-                  <td className="px-4 py-3">{r.assigned_employee_email ?? "—"}</td>
-                </tr>
-              ))}
+              {requests.map((r) => {
+                const assignedName = [r.assigned_employee_first_name, r.assigned_employee_last_name]
+                  .filter(Boolean)
+                  .join(" ")
+                  .trim();
+
+                return (
+                  <tr key={r.request_id}>
+                    <td className="px-4 py-3 whitespace-nowrap">{formatDate(r.created_at)}</td>
+                    <td className="px-4 py-3">{formatService(r.service_type)}</td>
+                    <td className="px-4 py-3"><StatusPill status={r.status} /></td>
+                    <td className="px-4 py-3 text-slate-700">
+                      <span title={r.description}>{(r.description ?? "").slice(0, 120)}{(r.description?.length ?? 0) > 120 ? "…" : ""}</span>
+                    </td>
+                    <td className="px-4 py-3">{assignedName || r.assigned_employee_email || "—"}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           {isFetching && <div className="px-4 py-2 text-xs text-slate-500">Ανανέωση…</div>}

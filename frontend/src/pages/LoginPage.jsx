@@ -14,7 +14,7 @@ const LoginSchema = Yup.object({
     .email("Δώστε έγκυρο email")
     .required("Απαραίτητο πεδίο"),
   password: Yup.string()
-    .min(6, "Τουλάχιστον 8 χαρακτήρες")
+    .min(8, "Τουλάχιστον 8 χαρακτήρες")
     .required("Απαραίτητο πεδίο"),
 });
 
