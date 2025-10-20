@@ -23,11 +23,11 @@ export default function RequestList({ title, items = [], linkToAll, loading, emp
         <div className="mt-4 py-6 text-sm text-slate-500">{emptyMessage}</div>
       ) : (
         <div className="mt-3 divide-y">
-          {rows.map((r) => (
+          {rows.map((r, idx) => (
             <div key={r.request_id ?? JSON.stringify(r)} className="py-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-slate-400">#{r.request_id}</span>
+                  <span className="text-slate-400">#{idx + 1}</span>
                   <span className="text-slate-700">{getServiceTypeLabel(r.service_type)}</span>
                   <StatusPill status={r.status} />
                 </div>

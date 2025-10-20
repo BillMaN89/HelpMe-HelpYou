@@ -30,20 +30,55 @@ export async function getSupportRequests(req, res) {
   const { email } = req.user;
   
   try {
-    //Requests view
-    const result = await pool.query(
-      `SELECT sr.*,
-              u.first_name AS assigned_employee_first_name,
-              u.last_name AS assigned_employee_last_name
-         FROM support_requests AS sr
-         LEFT JOIN users AS u
-           ON sr.assigned_employee_email = u.email
-        WHERE sr.user_email = $1
-        ORDER BY sr.created_at ASC`,
-      [email]
-    );
+    const pageParam = ensureInteger(req.query?.page);
+    const sizeParam = ensureInteger(req.query?.pageSize ?? req.query?.limit);
+    const statusFilter = (req.query?.status || '').trim().toLowerCase();
+    const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+    const pageSizeRaw = Number.isFinite(sizeParam) && sizeParam > 0 ? sizeParam : 20;
+    const pageSize = Math.min(pageSizeRaw, 100);
+    const offset = (page - 1) * pageSize;
 
-    res.status(200).json({ requests: result.rows });
+    const allowedStatuses = new Set(['unassigned', 'assigned', 'in_progress', 'completed', 'canceled']);
+    const applyStatus = statusFilter && statusFilter !== 'all' && allowedStatuses.has(statusFilter);
+
+    const params = applyStatus ? [email, statusFilter, pageSize, offset] : [email, pageSize, offset];
+    const query = `SELECT sr.*,
+                          u.first_name AS assigned_employee_first_name,
+                          u.last_name AS assigned_employee_last_name,
+                          COUNT(*) OVER() AS total_count
+                     FROM support_requests AS sr
+                     LEFT JOIN users AS u
+                       ON sr.assigned_employee_email = u.email
+                    WHERE sr.user_email = $1
+                    ${applyStatus ? 'AND sr.status = $2' : ''}
+                    ORDER BY sr.created_at ASC
+                    LIMIT $${applyStatus ? 3 : 2} OFFSET $${applyStatus ? 4 : 3}`;
+
+    const result = await pool.query(query, params);
+
+    let total = result.rows[0]?.total_count ?? 0;
+    if (result.rows.length === 0 && offset > 0) {
+      const countQuery = `SELECT COUNT(*) AS total
+                            FROM support_requests AS sr
+                           WHERE sr.user_email = $1
+                           ${applyStatus ? 'AND sr.status = $2' : ''}`;
+      const countParams = applyStatus ? [email, statusFilter] : [email];
+      const countRes = await pool.query(countQuery, countParams);
+      total = Number(countRes.rows[0]?.total ?? 0);
+    }
+
+    const requests = result.rows.map(({ total_count, ...rest }) => rest);
+    const totalPages = pageSize ? Math.max(1, Math.ceil(total / pageSize)) : 1;
+
+    res.status(200).json({
+      requests,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error('Σφάλμα κατά την προβολή αιτημάτων:', error);
     res.status(500).json({ message: 'Σφάλμα κατά την προβολή αιτημάτων' });
@@ -83,8 +118,18 @@ export async function getAllSupportRequests(req, res) {
     const pageSize = Math.min(pageSizeRaw, 100);
     const offset = (page - 1) * pageSize;
 
+    const statusFilter = (req.query?.status || '').trim().toLowerCase();
+    const allowedStatuses = new Set(['unassigned', 'assigned', 'in_progress', 'completed', 'canceled']);
+    const applyStatusFilter = statusFilter && statusFilter !== 'all' && allowedStatuses.has(statusFilter);
+
     async function runPaginated(whereClause = '', params = []) {
-      const where = whereClause ? `WHERE ${whereClause}` : '';
+      const filters = [];
+      if (whereClause) filters.push(whereClause);
+      if (applyStatusFilter) {
+        filters.push(`sr.status = $${params.length + 1}`);
+        params = [...params, statusFilter];
+      }
+      const where = filters.length ? `WHERE ${filters.join(' AND ')}` : '';
       const queryParams = [...params, pageSize, offset];
       const { rows } = await pool.query(
         `SELECT sr.*,
@@ -124,52 +169,39 @@ export async function getAllSupportRequests(req, res) {
       });
     }
 
-    // === Admin -> everything
-    if (roles.includes('admin')) {
-      console.log('User is admin — returning all requests');
-      const payload = await runPaginated();
-      return buildResponse(payload);
+    const segments = [];
+
+    if (roles.includes('admin') || roles.includes('secretary') || roles.includes('viewer')) {
+      console.log('User has full view rights — returning all requests');
+      segments.push({ where: '', params: [] });
     }
 
-    //temporary fix for secretary
-    if (roles.includes('secretary')){
-      console.log('User is secretary - returning all requests');
-      const payload = await runPaginated();
-      return buildResponse(payload);
-    }
-
-    // Board viewer -> read-only access to everything
-    if (roles.includes('viewer')) {
-      console.log('User is viewer — returning all requests (read-only)');
-      const payload = await runPaginated();
-      return buildResponse(payload);
-    }
-
-    // Therapist -> only psychological
     if (roles.includes('therapist')) {
-      console.log('User is therapist — returning psychological requests');
-      const payload = await runPaginated('sr.service_type = $1', ['psychological']);
-      return buildResponse(payload);
+      console.log('User is therapist — adding psychological requests');
+      segments.push({ where: "sr.service_type = $1", params: ['psychological'] });
     }
 
-    // Social Worker -> only social
     if (roles.includes('social_worker')) {
-      console.log('User is social_worker — returning social requests');
-      const payload = await runPaginated('sr.service_type = $1', ['social']);
-      return buildResponse(payload);
+      console.log('User is social_worker — adding social requests');
+      segments.push({ where: "sr.service_type = $1", params: ['social'] });
     }
 
-    // === Assigned requests only
     if (permissions.includes('view_assigned_requests')) {
-      console.log('User has view_assigned_requests permission — returning assigned requests');
-      const payload = await runPaginated('sr.assigned_employee_email = $1', [email]);
-      return buildResponse(payload);
+      console.log('User has view_assigned_requests permission — adding assigned requests');
+      segments.push({ where: "sr.assigned_employee_email = $1", params: [email] });
     }
 
-    console.warn(`Access denied for ${email} — no matching role/permission`);
-    return res.status(403).json({
-      message: 'Δεν έχετε δικαίωμα πρόσβασης σε αιτήματα'
-    });
+    if (segments.length === 0) {
+      console.warn(`Access denied for ${email} — no matching role/permission`);
+      return res.status(403).json({
+        message: 'Δεν έχετε δικαίωμα πρόσβασης σε αιτήματα'
+      });
+    }
+
+    // If multiple segments exist, run the broadest one (first with empty where) else use specific
+    const segment = segments.find((seg) => seg.where === '') ?? segments[0];
+    const payload = await runPaginated(segment.where, segment.params);
+    return buildResponse(payload);
 
   } catch (error) {
     console.error('Σφάλμα κατά την προβολή αιτημάτων:', error);

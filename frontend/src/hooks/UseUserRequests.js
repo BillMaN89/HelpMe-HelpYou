@@ -20,23 +20,25 @@ function getErrMsg(err) {
 
 /** QUERIES **/
 
-export function useMyRequests(options = {}) {
+export function useMyRequests({ enabled = true, page = 1, pageSize = 20, status = 'all', ...queryOptions } = {}) {
     return useQuery({
-        queryKey: ['requests', 'mine'],
-        queryFn: fetchMyRequests,
+        queryKey: ['requests', 'mine', { page, pageSize, status }],
+        queryFn: () => fetchMyRequests({ page, pageSize, status }),
         staleTime: 30 * 1000, // 30 seconds
+        enabled,
         onError: (err) => toast.error(getErrMsg(err)),
-        ...options,
+        ...queryOptions,
     });
 }
 
-export function useAllRequests({ enabled = true, page = 1, pageSize = 20 } = {}) {
+export function useAllRequests({ enabled = true, page = 1, pageSize = 20, status = 'all', ...queryOptions } = {}) {
     return useQuery({
-        queryKey: ['requests', 'all', { page, pageSize }],
-        queryFn: () => fetchAllRequests({ page, pageSize }),
+        queryKey: ['requests', 'all', { page, pageSize, status }],
+        queryFn: () => fetchAllRequests({ page, pageSize, status }),
         staleTime: 30 * 1000,
         enabled, // only run if user has permission
         onError: (err) => toast.error(getErrMsg(err)),
+        ...queryOptions,
     });
 }
 

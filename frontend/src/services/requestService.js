@@ -11,14 +11,21 @@ export async function createRequest( {service_type, description}) {
     return data.request;
 };
 
-export async function fetchMyRequests() {
-    const { data } = await http.get(API.REQUESTS.MINE);
-    // data = { requests: [] }
-    return data.requests;
+export async function fetchMyRequests({ page = 1, pageSize = 20, status = 'all' } = {}) {
+    const params = { page, pageSize };
+    if (status && status !== 'all') {
+        params.status = status;
+    }
+    const { data } = await http.get(API.REQUESTS.MINE, { params });
+    return data;
 };
 
-export async function fetchAllRequests({ page = 1, pageSize = 20 } = {}) {
-    const { data } = await http.get(API.REQUESTS.ALL, { params: { page, pageSize } });
+export async function fetchAllRequests({ page = 1, pageSize = 20, status = 'all' } = {}) {
+    const params = { page, pageSize };
+    if (status && status !== 'all') {
+        params.status = status;
+    }
+    const { data } = await http.get(API.REQUESTS.ALL, { params });
     return data;
 };
 

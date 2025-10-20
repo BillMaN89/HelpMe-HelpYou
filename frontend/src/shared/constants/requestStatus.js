@@ -4,7 +4,7 @@ export const REQUEST_STATUS = {
   ASSIGNED: 'assigned',
   IN_PROGRESS: 'in_progress',
   COMPLETED: 'completed',
-  CANCELLED: 'canceled',
+  CANCELED: 'canceled',
 };
 
 export const REQUEST_STATUS_LABEL = {
@@ -12,7 +12,6 @@ export const REQUEST_STATUS_LABEL = {
   assigned: 'Ανατεθειμένο',
   in_progress: 'Σε εξέλιξη',
   completed: 'Ολοκληρωμένο',
-  cancelled: 'Ακυρωμένο',
   canceled: 'Ακυρωμένο',
 };
 

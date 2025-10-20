@@ -8,7 +8,8 @@ import { FileText, PlusCircle } from "lucide-react";
 
 export default function PatientDashboard() {
   const { can } = useAuth();
-  const { data: mine = [], isLoading } = useMyRequests({ enabled: can('view_own_requests') });
+  const { data, isLoading } = useMyRequests({ enabled: can('view_own_requests'), page: 1, pageSize: 5, status: 'all' });
+  const mine = Array.isArray(data?.requests) ? data.requests : Array.isArray(data) ? data : [];
   return (
     <div className="space-y-6">
       <DashboardHeader
