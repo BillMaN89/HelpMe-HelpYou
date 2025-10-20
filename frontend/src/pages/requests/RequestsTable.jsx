@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Eye, View, ScanEye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { getServiceTypeLabel } from "../../shared/constants/serviceTypes";
 import { formatDate } from "../../shared/utils/dates";
 import StatusPill from "../../shared/components/StatusPill";
@@ -50,7 +50,7 @@ export default function RequestsTable({
                     Αιτών
                   </th>
                 )}
-                <th className="px-4 py-3 text-left font-medium w-[12rem]">
+                <th className="px-4 py-3 text-left font-medium w-[14rem]">
                   Κατάσταση
                 </th>
                 <th className="px-4 py-3 text-left font-medium w-[50%]">
@@ -84,7 +84,7 @@ export default function RequestsTable({
                         {requesterName || r.user_email || "—"}
                       </td>
                     )}
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <StatusPill status={r.status} />
                     </td>
                     <td className="px-4 py-3 text-slate-700 align-top whitespace-pre-wrap break-words">

@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { Eye } from "lucide-react";
 import { useAssignedToMe, useUpdateRequestStatus } from "../../hooks/UseUserRequests";
 import { getStatusLabel } from "../../shared/constants/requestStatus";
 import { getServiceTypeLabel } from "../../shared/constants/serviceTypes";
@@ -31,6 +33,7 @@ export default function AssignedToMePage() {
                 <th className="px-4 py-3 text-left font-medium">Υπηρεσία</th>
                 <th className="px-4 py-3 text-left font-medium">Κατάσταση</th>
                 <th className="px-4 py-3 text-left font-medium">Περιγραφή</th>
+                <th className="px-4 py-3 text-left font-medium">Ενέργειες</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -65,6 +68,17 @@ export default function AssignedToMePage() {
                   </td>
                   <td className="px-4 py-3 text-slate-700">
                     <span title={r.description}>{(r.description ?? "").slice(0, 120)}{(r.description?.length ?? 0) > 120 ? "…" : ""}</span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <Link
+                      to={`/app/requests/${r.request_id}`}
+                      state={{ from: "/app/requests/assigned" }}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-indigo-200 text-indigo-700 hover:border-indigo-300 hover:bg-indigo-50"
+                      title="Προβολή αιτήματος"
+                    >
+                      <Eye className="h-4 w-4" aria-hidden="true" />
+                      <span className="sr-only">Προβολή</span>
+                    </Link>
                   </td>
                 </tr>
               ))}
