@@ -18,15 +18,37 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     if (!canList) { setLoading(false); return; }
+    let cancelled = false;
     setLoading(true);
-    http.get(API.USERS.LIST)
-      .then(res => setUsers(res.data?.users ?? []))
-      .catch(err => setError(err?.response?.data?.message || 'Αποτυχία φόρτωσης χρηστών'))
-      .finally(() => setLoading(false));
-  }, [canList]);
+    http.get(API.USERS.LIST, { params: { page, pageSize } })
+      .then(res => {
+        if (cancelled) return;
+        const usersData = res.data?.users ?? [];
+        const meta = res.data?.meta ?? {};
+        setUsers(usersData);
+        setTotal(meta.total ?? usersData.length);
+        if (usersData.length === 0 && meta.total > 0 && page > 1) {
+          setPage(prev => Math.max(1, prev - 1));
+        }
+      })
+      .catch(err => {
+        if (cancelled) return;
+        setError(err?.response?.data?.message || 'Αποτυχία φόρτωσης χρηστών');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [canList, page, pageSize]);
 
   async function handleDelete(email) {
     const ok = window.confirm('Η ενέργεια αυτή είναι οριστική. Είστε σίγουροι;');
@@ -34,6 +56,7 @@ export default function UsersPage() {
     try {
       await http.delete(API.USERS.DELETE(email));
       setUsers(prev => prev.filter(u => u.email !== email));
+      setTotal(prev => Math.max(0, prev - 1));
       toast.success('Ο χρήστης διαγράφηκε');
     } catch (err) {
       const msg = err?.response?.data?.message || 'Αποτυχία διαγραφής χρήστη';
@@ -117,6 +140,29 @@ export default function UsersPage() {
                   ))}
                 </tbody>
               </table>
+              <div className="flex items-center justify-between px-4 py-3 border-t bg-slate-50 text-sm text-slate-600">
+                <span>
+                  Σελίδα {page} από {Math.max(1, Math.ceil(total / pageSize))}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={page === 1 || loading}
+                    onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                  >
+                    Προηγούμενη
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={page >= Math.max(1, Math.ceil(total / pageSize)) || loading}
+                    onClick={() => setPage(prev => prev + 1)}
+                  >
+                    Επόμενη
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </div>

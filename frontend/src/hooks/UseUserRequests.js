@@ -30,10 +30,10 @@ export function useMyRequests(options = {}) {
     });
 }
 
-export function useAllRequests({ enabled = true } = {}) {
+export function useAllRequests({ enabled = true, page = 1, pageSize = 20 } = {}) {
     return useQuery({
-        queryKey: ['requests', 'all'],
-        queryFn: fetchAllRequests,
+        queryKey: ['requests', 'all', { page, pageSize }],
+        queryFn: () => fetchAllRequests({ page, pageSize }),
         staleTime: 30 * 1000,
         enabled, // only run if user has permission
         onError: (err) => toast.error(getErrMsg(err)),
@@ -50,10 +50,10 @@ export function useAssignedToMe({ enabled = true } = {}) {
     });
 }
 
-export function useUnassignedRequests({ enabled = true } = {}) {
+export function useUnassignedRequests({ enabled = true, page = 1, pageSize = 20 } = {}) {
     return useQuery({
-        queryKey: ['requests', 'unassigned'],
-        queryFn: fetchUnassignedRequests,
+        queryKey: ['requests', 'unassigned', { page, pageSize }],
+        queryFn: () => fetchUnassignedRequests({ page, pageSize }),
         staleTime: 30 * 1000,
         enabled,
         onError: (err) => toast.error(getErrMsg(err)),

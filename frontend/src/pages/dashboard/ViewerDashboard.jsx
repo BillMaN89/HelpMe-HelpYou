@@ -7,8 +7,12 @@ import { useAllRequests } from "../../hooks/UseUserRequests";
 import { REQUEST_STATUS } from "../../shared/constants/requestStatus";
 
 export default function ViewerDashboard() {
-  const { data, isLoading, isFetching } = useAllRequests();
-  const requests = Array.isArray(data) ? data : [];
+  const { data, isLoading, isFetching } = useAllRequests({ page: 1, pageSize: 50 });
+  const requests = Array.isArray(data?.requests)
+    ? data.requests
+    : Array.isArray(data)
+    ? data
+    : [];
 
   const OPEN_STATUSES = [
     REQUEST_STATUS.UNASSIGNED,

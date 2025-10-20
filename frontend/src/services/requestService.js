@@ -17,16 +17,14 @@ export async function fetchMyRequests() {
     return data.requests;
 };
 
-export async function fetchAllRequests() {
-    const { data } = await http.get(API.REQUESTS.ALL);
-    // data = { requests: [] }
-    return data.requests;
+export async function fetchAllRequests({ page = 1, pageSize = 20 } = {}) {
+    const { data } = await http.get(API.REQUESTS.ALL, { params: { page, pageSize } });
+    return data;
 };
 
-export async function fetchUnassignedRequests() {
-    const { data } = await http.get(API.REQUESTS.UNASSIGNED);
-    // data = { requests: [] }
-    return data.requests;
+export async function fetchUnassignedRequests({ page = 1, pageSize = 20 } = {}) {
+    const { data } = await http.get(API.REQUESTS.UNASSIGNED, { params: { page, pageSize } });
+    return data;
 };
 
 export async function fetchAssignedToMe() {

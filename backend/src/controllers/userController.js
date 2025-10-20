@@ -16,7 +16,14 @@ export async function listUsers(req, res) {
       return res.status(403).json({ message: 'Δεν έχετε δικαίωμα προβολής χρηστών' });
     }
 
-    // basic listing with roles aggregated
+    // pagination
+    const pageParam = ensureInteger(req.query?.page);
+    const sizeParam = ensureInteger(req.query?.pageSize ?? req.query?.limit);
+    const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+    const pageSizeRaw = Number.isFinite(sizeParam) && sizeParam > 0 ? sizeParam : 20;
+    const pageSize = Math.min(pageSizeRaw, 100); // safety cap
+    const offset = (page - 1) * pageSize;
+
     const { rows } = await pool.query(
       `SELECT u.email,
               u.first_name,
@@ -31,12 +38,26 @@ export async function listUsers(req, res) {
                   ORDER BY ur2.role_name
                 ),
                 ARRAY[]::text[]
-              ) AS roles
+              ) AS roles,
+              COUNT(*) OVER() AS total_count
          FROM users u
-        ORDER BY u.last_name, u.first_name`
+        ORDER BY u.last_name, u.first_name
+        LIMIT $1 OFFSET $2`,
+      [pageSize, offset]
     );
 
-    return res.status(200).json({ users: rows });
+    const total = rows[0]?.total_count ?? 0;
+    const users = rows.map(({ total_count, ...user }) => user);
+
+    return res.status(200).json({
+      users,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: pageSize ? Math.max(1, Math.ceil(total / pageSize)) : 1,
+      },
+    });
   } catch (error) {
     console.error('Σφάλμα στο listUsers:', error);
     return res.status(500).json({ message: 'Σφάλμα κατά την προβολή χρηστών' });

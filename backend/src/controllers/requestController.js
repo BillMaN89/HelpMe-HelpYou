@@ -1,4 +1,5 @@
 import { pool } from '../db/pool.js';
+import { ensureInteger } from '../utils/helpers.js';
 
 export async function createSupportRequest(req, res) {
     const { service_type, description } = req.body;
@@ -75,65 +76,94 @@ export async function getAllSupportRequests(req, res) {
     const roles = rolesResult.rows.map(r => r.role_name);
     console.log(`Roles for ${email}:`, roles);
 
+    const pageParam = ensureInteger(req.query?.page);
+    const sizeParam = ensureInteger(req.query?.pageSize ?? req.query?.limit);
+    const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+    const pageSizeRaw = Number.isFinite(sizeParam) && sizeParam > 0 ? sizeParam : 20;
+    const pageSize = Math.min(pageSizeRaw, 100);
+    const offset = (page - 1) * pageSize;
+
+    async function runPaginated(whereClause = '', params = []) {
+      const where = whereClause ? `WHERE ${whereClause}` : '';
+      const queryParams = [...params, pageSize, offset];
+      const { rows } = await pool.query(
+        `SELECT sr.*,
+                COUNT(*) OVER() AS total_count
+           FROM support_requests AS sr
+          ${where}
+          ORDER BY sr.created_at ASC
+          LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+        queryParams
+      );
+
+      let total = rows[0]?.total_count ?? 0;
+      if (rows.length === 0 && offset > 0) {
+        const countRes = await pool.query(
+          `SELECT COUNT(*) AS total
+             FROM support_requests AS sr
+            ${where}`,
+          params
+        );
+        total = Number(countRes.rows[0]?.total ?? 0);
+      }
+
+      const requests = rows.map(({ total_count, ...rest }) => rest);
+      return { requests, total };
+    }
+
+    function buildResponse(payload) {
+      const totalPages = pageSize ? Math.max(1, Math.ceil(payload.total / pageSize)) : 1;
+      return res.status(200).json({
+        requests: payload.requests,
+        meta: {
+          page,
+          pageSize,
+          total: payload.total,
+          totalPages,
+        },
+      });
+    }
+
     // === Admin -> everything
     if (roles.includes('admin')) {
       console.log('User is admin — returning all requests');
-      const all = await pool.query(
-        'SELECT * FROM support_requests ORDER BY created_at ASC'
-      );
-      return res.status(200).json({ requests: all.rows });
+      const payload = await runPaginated();
+      return buildResponse(payload);
     }
 
     //temporary fix for secretary
     if (roles.includes('secretary')){
       console.log('User is secretary - returning all requests');
-      const all = await pool.query(
-        'SELECT * FROM support_requests ORDER BY created_at ASC'
-      );
-      return res.status(200).json({ requests: all.rows });
+      const payload = await runPaginated();
+      return buildResponse(payload);
     }
 
     // Board viewer -> read-only access to everything
     if (roles.includes('viewer')) {
       console.log('User is viewer — returning all requests (read-only)');
-      const all = await pool.query(
-        'SELECT * FROM support_requests ORDER BY created_at ASC'
-      );
-      return res.status(200).json({ requests: all.rows });
+      const payload = await runPaginated();
+      return buildResponse(payload);
     }
 
     // Therapist -> only psychological
     if (roles.includes('therapist')) {
       console.log('User is therapist — returning psychological requests');
-      const result = await pool.query(
-        `SELECT * FROM support_requests
-         WHERE service_type = 'psychological'
-         ORDER BY created_at ASC`
-      );
-      return res.status(200).json({ requests: result.rows });
+      const payload = await runPaginated('sr.service_type = $1', ['psychological']);
+      return buildResponse(payload);
     }
 
     // Social Worker -> only social
     if (roles.includes('social_worker')) {
       console.log('User is social_worker — returning social requests');
-      const result = await pool.query(
-        `SELECT * FROM support_requests
-         WHERE service_type = 'social'
-         ORDER BY created_at ASC`
-      );
-      return res.status(200).json({ requests: result.rows });
+      const payload = await runPaginated('sr.service_type = $1', ['social']);
+      return buildResponse(payload);
     }
 
     // === Assigned requests only
     if (permissions.includes('view_assigned_requests')) {
       console.log('User has view_assigned_requests permission — returning assigned requests');
-      const assigned = await pool.query(
-        `SELECT * FROM support_requests
-         WHERE assigned_employee_email = $1
-         ORDER BY created_at ASC`,
-        [email]
-      );
-      return res.status(200).json({ requests: assigned.rows });
+      const payload = await runPaginated('sr.assigned_employee_email = $1', [email]);
+      return buildResponse(payload);
     }
 
     console.warn(`Access denied for ${email} — no matching role/permission`);
@@ -232,19 +262,51 @@ export async function getAssignedRequests(req, res) {
 
 export async function getUnassignedRequests(_req, res) {
   try {
+    const pageParam = ensureInteger(_req.query?.page);
+    const sizeParam = ensureInteger(_req.query?.pageSize ?? _req.query?.limit);
+    const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+    const pageSizeRaw = Number.isFinite(sizeParam) && sizeParam > 0 ? sizeParam : 20;
+    const pageSize = Math.min(pageSizeRaw, 100);
+    const offset = (page - 1) * pageSize;
+
     const { rows } = await pool.query(
       `SELECT sr.*,
               u.first_name AS requester_first_name,
-              u.last_name AS requester_last_name
+              u.last_name AS requester_last_name,
+              COUNT(*) OVER() AS total_count
          FROM support_requests AS sr
          LEFT JOIN users AS u
            ON sr.user_email = u.email
         WHERE sr.status = 'unassigned'
           AND sr.assigned_employee_email IS NULL
-        ORDER BY sr.created_at ASC`
+        ORDER BY sr.created_at ASC
+        LIMIT $1 OFFSET $2`,
+      [pageSize, offset]
     );
 
-    return res.status(200).json({ requests: rows });
+    let total = rows[0]?.total_count ?? 0;
+    if (rows.length === 0 && offset > 0) {
+      const countRes = await pool.query(
+        `SELECT COUNT(*) AS total
+           FROM support_requests AS sr
+          WHERE sr.status = 'unassigned'
+            AND sr.assigned_employee_email IS NULL`
+      );
+      total = Number(countRes.rows[0]?.total ?? 0);
+    }
+
+    const requests = rows.map(({ total_count, ...rest }) => rest);
+    const totalPages = pageSize ? Math.max(1, Math.ceil(total / pageSize)) : 1;
+
+    return res.status(200).json({
+      requests,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error('Σφάλμα κατά την προβολή μη ανατεθειμένων αιτημάτων:', error);
     return res.status(500).json({
