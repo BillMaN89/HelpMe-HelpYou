@@ -22,6 +22,9 @@ import RequestView from "./pages/requests/RequestView";
 import UsersPage from "./pages/users/UsersPage";
 import UserCreatePage from "./pages/users/UserCreatePage";
 import UserProfileView from "./pages/users/UserProfileView";
+import AnonymousRequestsPage from "./pages/requests/AnonymousRequestsPage";
+import AnonymousRequestCreatePage from "./pages/requests/AnonymousRequestCreatePage";
+import AnonymousRequestView from "./pages/requests/AnonymousRequestView";
 
 import { RequireLogin } from "./components/auth/Guards";
 import { AuthProvider } from "./components/auth/AuthContext";
@@ -51,6 +54,10 @@ function AppRoutes() {
           <Route path="requests/:id" element={<RequestView />} />
           <Route path="myRequests" element={<MyRequestsPage />} />
           <Route path="requests/new" element={<RequestCreatePage />} />
+          {/* Anonymous Requests */}
+          <Route path="anonymous-requests" element={<AnonymousRequestsPage />} />
+          <Route path="anonymous-requests/new" element={<AnonymousRequestCreatePage />} />
+          <Route path="anonymous-requests/:id" element={<AnonymousRequestView />} />
           {/* Profile */}
           <Route path="profile" element={<ProfilePage />} />
           {/* Users */}

@@ -5,6 +5,7 @@ import { pool } from './db/pool.js';
 import authRoutes from './routes/authRoutes.js';
 import requestRoutes from './routes/requestRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import anonymousRequestRoutes from './routes/anonymousRequestRoutes.js';
 
 dotenv.config();
 
@@ -19,6 +20,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/requests', requestRoutes);
 //Users
 app.use('/api/users', userRoutes);
+//Anonymous Requests
+app.use('/api/anonymous-requests', anonymousRequestRoutes);
 
 app.get('/', (req, res) => {
     res.send('Πτυχιακή backend on fire! 🔥');

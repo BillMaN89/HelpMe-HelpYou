@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserProfile, getUserByEmail, updateUser, deleteUserProfile, listUsers, listRoles, setUserRoles } from '../controllers/userController.js';
+import { getUserProfile, getUserByEmail, updateUser, deleteUserProfile, listUsers, listRoles, setUserRoles, listEmployees } from '../controllers/userController.js';
 import { verifyToken } from '../middlewares/verifyToken.js';
 
 const router = express.Router();
@@ -10,6 +10,9 @@ router.get('/', listUsers);
 
 //Roles list (admin-only)
 router.get('/roles', listRoles);
+
+//Employees list (for assignment dropdowns)
+router.get('/employees', listEmployees);
 
 //View profile
 router.get( '/me', getUserProfile);

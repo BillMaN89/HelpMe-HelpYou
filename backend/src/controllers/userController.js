@@ -515,6 +515,22 @@ export async function setUserRoles(req, res) {
   }
 }
 
+// List employees (for assignment dropdown)
+export async function listEmployees(req, res) {
+  try {
+    const { rows } = await pool.query(
+      `SELECT u.email, u.first_name, u.last_name
+         FROM users u
+        WHERE u.user_type = 'employee'
+        ORDER BY u.last_name, u.first_name`
+    );
+    return res.status(200).json({ employees: rows });
+  } catch (error) {
+    console.error('Σφάλμα στο listEmployees:', error);
+    return res.status(500).json({ message: 'Σφάλμα κατά την ανάκτηση υπαλλήλων' });
+  }
+}
+
 //Helper functions
 async function userHasPermission(email, permission) {
   try {

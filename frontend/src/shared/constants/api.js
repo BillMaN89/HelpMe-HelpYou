@@ -10,6 +10,7 @@ export const API = {
     LIST: "/api/users",
     ROLES_ALL: "/api/users/roles", // GET
     ROLES_SET: (email) => `/api/users/${encodeURIComponent(email)}/roles`, // PATCH { roles: [] }
+    EMPLOYEES: "/api/users/employees", // GET (for assignment dropdowns)
   },
   REQUESTS: {
     CREATE: "/api/requests",             // POST
@@ -20,5 +21,13 @@ export const API = {
     ASSIGNED_TO_ME: "/api/requests/assigned-to-me", // GET
     BY_ID: (id) => `/api/requests/${id}`, // GET | PATCH | DELETE
     STATUS: (id) => `/api/requests/${id}/status`, // PATCH { status }
+  },
+  ANONYMOUS_REQUESTS: {
+    CREATE: "/api/anonymous-requests",               // POST
+    LIST: "/api/anonymous-requests",                 // GET (paginated)
+    BY_ID: (id) => `/api/anonymous-requests/${id}`,  // GET
+    ASSIGN: (id) => `/api/anonymous-requests/${id}/assign`, // PATCH
+    STATUS: (id) => `/api/anonymous-requests/${id}/status`, // PATCH
+    NOTES: (id) => `/api/anonymous-requests/${id}/notes`,   // PATCH
   },
 };

@@ -1,7 +1,10 @@
 export const NAV_ITEMS = [
   { key: 'home', label: 'Αρχική', to: '/app', all: true, exact: true },
 
-  { key: 'requests', label: 'Αιτήματα', exact: true, to: '/app/requests',
+  { key: 'anonymousRequests', label: 'Ανώνυμα Αιτήματα', exact: true, to: '/app/anonymous-requests',
+    requireAnyPerm: ['manage_anonymous_requests', 'view_anonymous_requests'], showFor: ['admin', 'therapist', 'social_worker', 'secretary', 'viewer'] },
+
+  { key: 'requests', label: 'Αιτήματα Χρηστών', exact: true, to: '/app/requests',
     requireAnyPerm: ['view_requests'], showFor: ['therapist','social_worker','secretary','admin','viewer'] },
 
   { key: 'assign', label: 'Αναθέσεις', exact: true, to: '/app/requests/unassigned',
@@ -15,6 +18,7 @@ export const NAV_ITEMS = [
 
   { key: 'newRequest', label: 'Νέο αίτημα', exact: true, to: '/app/requests/new',
     requireAnyPerm: ['create_request'], showFor: ['patient', 'volunteer', 'admin'] },
+
 
   { key: 'users', label: 'Χρήστες', to: '/app/users', exact: true,
     requireAnyPerm: ['manage_users','update_user','view_patient_info', 'view_user'], showFor: ['admin','secretary','therapist','social_worker','viewer'] },
