@@ -6,7 +6,7 @@ import { REQUEST_STATUS, REQUEST_STATUS_LABEL } from "../../shared/constants/req
 import { useAuth } from "../../components/auth/AuthContext";
 import { Trash2 } from "lucide-react";
 
-const DEFAULT_PAGE_SIZE = 12;
+const DEFAULT_PAGE_SIZE = 8;
 
 export default function AllRequestsPage() {
   const [page, setPage] = useState(1);
@@ -74,6 +74,7 @@ export default function AllRequestsPage() {
             ? "Δεν υπάρχουν αιτήματα."
             : `Δεν υπάρχουν αιτήματα με κατάσταση «${REQUEST_STATUS_LABEL[status] ?? status}».`
         }
+        startIndex={(page - 1) * pageSize}
         linkState={{ from: "/app/requests" }}
         renderActions={
           isAdmin && status === 'all'

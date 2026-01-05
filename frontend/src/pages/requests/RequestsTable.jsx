@@ -12,6 +12,7 @@ export default function RequestsTable({
   error,
   emptyMessage,
   showRequester = false,
+  startIndex = 0,
   linkState,
   renderActions,
 }) {
@@ -39,6 +40,7 @@ export default function RequestsTable({
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 text-left font-medium w-16">#</th>
+                <th className="px-4 py-3 text-left font-medium w-20">ID</th>
                 <th className="px-4 py-3 text-left font-medium w-[13rem]">
                   Ημ/νία
                 </th>
@@ -62,7 +64,8 @@ export default function RequestsTable({
               </tr>
             </thead>
             <tbody className="divide-y">
-              {rows.map((r) => {
+              {rows.map((r, index) => {
+                const rowNumber = startIndex + index + 1;
                 const requesterName = [r.requester_first_name, r.requester_last_name]
                   .filter(Boolean)
                   .join(" ")
@@ -71,6 +74,9 @@ export default function RequestsTable({
                 return (
                   <tr key={r.request_id}>
                     <td className="px-4 py-3 whitespace-nowrap">
+                      {rowNumber}
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-slate-500">
                       {r.request_id}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">

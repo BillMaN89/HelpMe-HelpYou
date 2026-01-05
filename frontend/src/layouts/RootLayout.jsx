@@ -35,7 +35,7 @@ export default function RootLayout({ }) {
         <div className="mx-auto max-w-7xl px-4 py-6 text-sm text-slate-500">
           <div className="flex items-center justify-between">
             <p>© {new Date().getFullYear()} BillMaN</p>
-            <p>Thesis Project • v 0.2.0</p>
+            <p>Thesis Project • v 0.3.1</p>
           </div>
         </div>
       </footer>

@@ -36,6 +36,7 @@ export default function UnassignedRequestsPage() {
         error={error}
         emptyMessage="Δεν υπάρχουν μη ανατεθειμένα αιτήματα."
         showRequester
+        startIndex={(page - 1) * pageSize}
         linkState={{ from: "/app/requests/unassigned" }}
         renderActions={
           isAdmin
