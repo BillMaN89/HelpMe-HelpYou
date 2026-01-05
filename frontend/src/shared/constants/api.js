@@ -28,6 +28,12 @@ export const API = {
     BY_ID: (id) => `/api/anonymous-requests/${id}`,  // GET
     ASSIGN: (id) => `/api/anonymous-requests/${id}/assign`, // PATCH
     STATUS: (id) => `/api/anonymous-requests/${id}/status`, // PATCH
-    NOTES: (id) => `/api/anonymous-requests/${id}/notes`,   // PATCH
+    NOTES: (id) => `/api/anonymous-requests/${id}/notes`,   // PATCH (legacy)
+  },
+  NOTES: {
+    LIST: (type, id) => `/api/notes/${type}/${id}`,    // GET
+    ADD: (type, id) => `/api/notes/${type}/${id}`,     // POST
+    EDIT: (noteId) => `/api/notes/${noteId}`,          // PATCH
+    DELETE: (noteId) => `/api/notes/${noteId}`,        // DELETE
   },
 };

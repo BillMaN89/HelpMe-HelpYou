@@ -5,9 +5,9 @@ import {
   useAnonymousRequestById,
   useAssignAnonymousRequest,
   useUpdateAnonymousRequestStatus,
-  useUpdateAnonymousRequestNotes,
   useDeleteAnonymousRequest,
 } from '../../hooks/useAnonymousRequests';
+import NotesLog from '../../components/notes/NotesLog';
 import { useAuth } from '../../components/auth/AuthContext';
 import { getServiceTypeLabel } from '../../shared/constants/serviceTypes';
 import { getStatusLabel, REQUEST_STATUS } from '../../shared/constants/requestStatus';
@@ -81,19 +81,10 @@ export default function AnonymousRequestView() {
     return groups;
   }, [users]);
   const updateStatus = useUpdateAnonymousRequestStatus();
-  const updateNotes = useUpdateAnonymousRequestNotes();
   const deleteReq = useDeleteAnonymousRequest();
 
   const [selectedAssignee, setSelectedAssignee] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
-  const [notes, setNotes] = useState('');
-  const [notesInitialized, setNotesInitialized] = useState(false);
-
-  // Initialize notes when request loads
-  if (req && !notesInitialized) {
-    setNotes(req.notes_from_employee || '');
-    setNotesInitialized(true);
-  }
 
   const handleAssign = () => {
     const target = selectedAssignee || req?.assigned_employee_email;
@@ -106,10 +97,6 @@ export default function AnonymousRequestView() {
     const newStatus = selectedStatus || req?.status;
     if (!newStatus || newStatus === req?.status) return;
     updateStatus.mutate({ id: req.request_id, status: newStatus });
-  };
-
-  const handleNotesUpdate = () => {
-    updateNotes.mutate({ id: req.request_id, notes_from_employee: notes });
   };
 
   const handleDelete = () => {
@@ -241,28 +228,6 @@ export default function AnonymousRequestView() {
                 </div>
               </div>
 
-              {/* Notes */}
-              <div>
-                <label className="block text-sm text-slate-500 mb-1">Σημειώσεις υπαλλήλου</label>
-                <textarea
-                  className="w-full border rounded-lg px-3 py-2 outline-none focus:ring focus:ring-opacity-50 min-h-[6rem]"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  disabled={updateNotes.isPending}
-                  placeholder="Προσθέστε σημειώσεις για το αίτημα..."
-                />
-                <div className="mt-2">
-                  <Button
-                    size="sm"
-                    onClick={handleNotesUpdate}
-                    loading={updateNotes.isPending}
-                    disabled={notes === (req.notes_from_employee || '')}
-                  >
-                    Αποθήκευση σημειώσεων
-                  </Button>
-                </div>
-              </div>
-
               {/* Delete */}
               {isAdmin && (
                 <div className="pt-4 border-t">
@@ -277,6 +242,9 @@ export default function AnonymousRequestView() {
               )}
             </div>
           )}
+
+          {/* Notes Log - visible to all (viewers see read-only) */}
+          <NotesLog requestType="anonymous" requestId={parseInt(id, 10)} />
         </>
       )}
     </section>

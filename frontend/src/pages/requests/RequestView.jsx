@@ -10,6 +10,7 @@ import { roleLabel, userTypeLabel, departmentLabel, employeeTypeLabel } from '..
 import { useAssignRequest } from '../../hooks/UseUserRequests';
 import Button from '../../components/Button';
 import { formatDate } from '../../shared/utils/dates';
+import NotesLog from '../../components/notes/NotesLog';
 
 export default function RequestView() {
   const { id } = useParams();
@@ -126,11 +127,15 @@ export default function RequestView() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="mt-6">
             <Area label="Περιγραφή" value={req.description} />
-            <Area label="Σημειώσεις υπαλλήλου" value={req.notes_from_employee} />
           </div>
         </div>
+      )}
+
+      {/* Notes Log */}
+      {!isLoading && !error && req && (
+        <NotesLog requestType="support" requestId={parseInt(id, 10)} />
       )}
 
       {canViewUserProfiles && (
