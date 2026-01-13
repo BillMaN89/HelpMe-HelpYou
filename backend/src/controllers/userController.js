@@ -753,6 +753,7 @@ async function shapeProfileForViewer(profile, { viewerEmail, targetEmail }) {
   const isAdmin = await userHasPermission(viewerEmail, 'manage_roles');
   const isSelf = viewerEmail === targetEmail;
   const canViewPatientInfo = await userHasPermission(viewerEmail, 'view_patient_info');
+  const canViewUsers = await userHasPermission(viewerEmail, 'view_user');
 
   const shaped = {
     email: profile.email,
@@ -796,6 +797,7 @@ async function shapeProfileForViewer(profile, { viewerEmail, targetEmail }) {
     } else if (profile.user_type === 'employee') {
       shaped.details = {
         department: profile.details?.department ?? null,
+        employee_type: profile.details?.employee_type ?? null,
         has_vehicle: !!profile.details?.has_vehicle,
       };
     } else {
@@ -805,12 +807,33 @@ async function shapeProfileForViewer(profile, { viewerEmail, targetEmail }) {
   }
 
   // Viewing others, non-admin:
-  // Allow exposing patient details if viewer has view_patient_info
-  if (profile.user_type === 'patient' && canViewPatientInfo) {
+  // Allow viewing all profile types if user has EITHER view_user OR view_patient_info permission
+  const canViewOthers = canViewUsers || canViewPatientInfo;
+
+  // Allow exposing patient details if viewer has view_user or view_patient_info
+  if (profile.user_type === 'patient' && canViewOthers) {
     shaped.details = {
       disease_type: profile.details?.disease_type ?? null,
       handicap: profile.details?.handicap ?? null,
       emergency_contact: profile.details?.emergency_contact ?? null,
+    };
+  }
+
+  // Allow exposing volunteer details if viewer has view_user or view_patient_info
+  if (profile.user_type === 'volunteer' && canViewOthers) {
+    shaped.details = {
+      occupation: profile.details?.occupation ?? null,
+      has_vehicle: !!profile.details?.has_vehicle,
+      help_types: Array.isArray(profile.details?.help_types) ? profile.details.help_types : [],
+    };
+  }
+
+  // Allow exposing employee details if viewer has view_user or view_patient_info
+  if (profile.user_type === 'employee' && canViewOthers) {
+    shaped.details = {
+      department: profile.details?.department ?? null,
+      employee_type: profile.details?.employee_type ?? null,
+      has_vehicle: !!profile.details?.has_vehicle,
     };
   }
 
