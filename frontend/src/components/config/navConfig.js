@@ -1,7 +1,7 @@
 export const NAV_ITEMS = [
   { key: 'home', label: 'Αρχική', to: '/app', all: true, exact: true },
 
-  { key: 'anonymousRequests', label: 'Ανώνυμα Αιτήματα', exact: true, to: '/app/anonymous-requests',
+  { key: 'anonymousRequests', label: 'Τηλεφωνικά Αιτήματα', exact: true, to: '/app/anonymous-requests',
     requireAnyPerm: ['manage_anonymous_requests', 'view_anonymous_requests'], showFor: ['admin', 'therapist', 'social_worker', 'secretary', 'viewer'] },
 
   { key: 'requests', label: 'Αιτήματα Χρηστών', exact: true, to: '/app/requests',

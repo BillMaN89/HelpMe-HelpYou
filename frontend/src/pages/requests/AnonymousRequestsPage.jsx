@@ -46,10 +46,10 @@ export default function AnonymousRequestsPage() {
   return (
     <section className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Ανώνυμα Αιτήματα</h1>
+        <h1 className="text-2xl font-semibold">Τηλεφωνικά Αιτήματα</h1>
         {canManage && (
           <Link to="/app/anonymous-requests/new">
-            <Button variant="primary">Νέο Ανώνυμο Αίτημα</Button>
+            <Button variant="primary">Νέο Τηλεφωνικό Αίτημα</Button>
           </Link>
         )}
       </div>
@@ -77,7 +77,7 @@ export default function AnonymousRequestsPage() {
 
       <div className="p-0 overflow-hidden rounded-xl border bg-white">
         <div className="px-4 py-3 border-b bg-slate-50 flex items-center justify-between">
-          <span className="font-medium text-slate-700">Λίστα ανώνυμων αιτημάτων</span>
+          <span className="font-medium text-slate-700">Λίστα τηλεφωνικών αιτημάτων</span>
           {isFetching && <span className="text-xs text-slate-500">Ανανέωση...</span>}
         </div>
 
@@ -88,7 +88,7 @@ export default function AnonymousRequestsPage() {
         ) : requests.length === 0 ? (
           <div className="p-6 text-slate-700">
             {status === 'all'
-              ? "Δεν υπάρχουν ανώνυμα αιτήματα."
+              ? "Δεν υπάρχουν τηλεφωνικά αιτήματα."
               : `Δεν υπάρχουν αιτήματα με κατάσταση «${REQUEST_STATUS_LABEL[status] ?? status}».`}
           </div>
         ) : (
