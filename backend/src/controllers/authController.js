@@ -259,9 +259,9 @@ export const registerUser = async (req, res) => {
 };
 
 export function resolveRoleForUser(user_type, department, employee_type) {
-  const ut = (user_type || '').toLowerCase().trim();
-  const dept = (department || '').toLowerCase().trim();
-  const et = (employee_type || '').toLowerCase().trim();
+  const ut = String(user_type || '').toLowerCase().trim();
+  const dept = String(department || '').toLowerCase().trim();
+  const et = String(employee_type || '').toLowerCase().trim();
 
   if (ut === 'patient') return 'patient';
   if (ut === 'volunteer') return 'volunteer';

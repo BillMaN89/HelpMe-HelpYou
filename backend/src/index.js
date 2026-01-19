@@ -11,6 +11,7 @@ import noteRoutes from './routes/noteRoutes.js';
 dotenv.config();
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
